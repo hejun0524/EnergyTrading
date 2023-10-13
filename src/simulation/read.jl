@@ -26,15 +26,6 @@ function read(path::String)::SimulationInstance
 end
 
 ```
-This function makes sure the input is time series 
-```
-function _time_series(x, T; default = nothing)
-    x !== nothing || return default
-    x isa Array || return [x for _ in 1:T]
-    return x
-end
-
-```
 This function synchronizes the dimensions of any vector to system clock
 ```
 function _time_dimension_adjust(
@@ -66,8 +57,15 @@ function _read_parameters(
     total_time = parameters["Total time (d)"]
     total_time = total_time * 24 * 60 
     time_step = parameters["Time step (min)"]
-    clock = _construct_clock(total_time, time_step)
-
+    # construct clock
+    (total_time % time_step == 0) || error(
+        "The total time length is not divisible by the time step.")
+    time_one_day = 24 * 60
+    (time_one_day % time_step == 0) || error(
+        "The total time length of one day is not divisible by the time step.")
+    n_steps = total_time ÷ time_step
+    n_steps_one_day = time_one_day ÷ time_step
+    # construct clock groups
     group_params = groups["Parameters"]
     group_time_step = group_params["Time step (min)"]
     group_total_time = group_params["Total time (h)"] * 60
@@ -77,7 +75,10 @@ function _read_parameters(
         group_labels = [1 for _ in 1:(group_total_time ÷ group_time_step)]
     end
     if group_label_notes === nothing 
-        group_label_notes = Dict("1" => "One group")
+        group_label_notes = Dict(1 => "One group")
+    else 
+        group_label_notes = Dict(parse(Int, index) => note 
+            for (index, note) in group_label_notes)
     end
     time_groups = _time_dimension_adjust(
         group_labels,
@@ -87,13 +88,20 @@ function _read_parameters(
         sys_total_time = total_time,
         max_steps = clock.n_steps,
     )
-    _update_clock_groups!(
-        clock,
+    if time_groups === nothing
+        time_groups = ones(n_steps)
+    end
+    (n_steps == length(time_groups)) || error(
+        "The total number of time groups do not match other information.")
+    clock = Clock(
+        T = total_time,
+        time_step = time_step,
+        n_steps = n_steps,
+        n_steps_one_day = n_steps_one_day,
         time_groups = time_groups,
-        time_group_notes = Dict(parse(Int, index) => note 
-            for (index, note) in group_label_notes),
+        time_group_notes = group_label_notes,
+        n_groups = length(Set(time_groups))
     )
-
     return clock
 end
 
@@ -127,10 +135,10 @@ function _read_grid(
         sys_total_time = clock.T,
         max_steps = clock.n_steps,
     )
-    return _construct_grid(
-        sell_out_price,
-        buy_in_price,
-        network.buses[1], # slack bus
+    return Grid(
+        sell_out_price = sell_out_price,
+        buy_in_price = buy_in_price,
+        bus = network.buses[1], # slack bus
     )
 end
 
@@ -186,26 +194,14 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                buyers = [ZIPTrader(
-                    action_type = "buy",
-                    trader_group = g,
-                    limit_price = grid.sell_out_price,
-                    current_price = grid.sell_out_price[findfirst(x -> x == g, clock.time_groups)],
-                    price_history = [grid.sell_out_price[findfirst(x -> x == g, clock.time_groups)]],
-                ) for g in 1:clock.n_groups]
+                buyers = Trader[]
             ))
         elseif agent_info["Role"] == "Producer"
             push!(agents, Producer(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                sellers = [ZIPTrader(
-                    action_type = "sell",
-                    trader_group = g,
-                    limit_price = grid.buy_in_price,
-                    current_price = grid.buy_in_price[findfirst(x -> x == g, clock.time_groups)],
-                    price_history = [grid.buy_in_price[findfirst(x -> x == g, clock.time_groups)]],
-                ) for g in 1:clock.n_groups],
+                sellers = Trader[],
                 storage = Storage(
                     capacity = agent_info["Storage capacity"] == -1 ? 16 * demand_shape.average * agent_info["PV type"] : agent_info["Storage capacity"],
                     efficiency = agent_info["Storage efficiency"],
@@ -213,12 +209,6 @@ function _read_agents(
                 panel = SolarPanel(
                     max_rate = demand_shape.average * agent_info["PV type"],
                     efficiency = agent_info["PV efficiency"]
-                ),
-                estimation_method = DiscountedFuture(
-                    discount_factor = agent_info["Allow supply forecast"],
-                    allow_supply_prediction = agent_info["Allow demand forecast"],
-                    allow_demand_prediction = agent_info["Discount factor"],
-                    lookahead_steps = agent_info["Forecast length (min)"] ÷ clock.time_step,
                 )
             ))
         elseif agent_info["Role"] == "Prosumer"
@@ -226,20 +216,8 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                buyers = [ZIPTrader(
-                    action_type = "buy",
-                    trader_group = g,
-                    limit_price = grid.sell_out_price,
-                    current_price = grid.sell_out_price[findfirst(x -> x == g, clock.time_groups)],
-                    price_history = [grid.sell_out_price[findfirst(x -> x == g, clock.time_groups)]],
-                ) for g in 1:clock.n_groups],
-                sellers = [ZIPTrader(
-                    action_type = "sell",
-                    trader_group = g,
-                    limit_price = grid.buy_in_price,
-                    current_price = grid.buy_in_price[findfirst(x -> x == g, clock.time_groups)],
-                    price_history = [grid.buy_in_price[findfirst(x -> x == g, clock.time_groups)]],
-                ) for g in 1:clock.n_groups],
+                buyers = Trader[],
+                sellers = Trader[],
                 storage = Storage(
                     capacity = agent_info["Storage capacity"] == -1 ? 16 * demand_shape.average * agent_info["PV type"] : agent_info["Storage capacity"],
                     efficiency = agent_info["Storage efficiency"],
@@ -247,12 +225,6 @@ function _read_agents(
                 panel = SolarPanel(
                     max_rate = demand_shape.average * agent_info["PV type"],
                     efficiency = agent_info["PV efficiency"]
-                ),
-                estimation_method = DiscountedFuture(
-                    discount_factor = agent_info["Allow supply forecast"],
-                    allow_supply_prediction = agent_info["Allow demand forecast"],
-                    allow_demand_prediction = agent_info["Discount factor"],
-                    lookahead_steps = agent_info["Forecast length (min)"] ÷ clock.time_step,
                 )
             ))
         else
