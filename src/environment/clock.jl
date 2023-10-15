@@ -16,3 +16,10 @@ function _get_time_counter_of_day(clock::Clock, time_counter::Int)
     counter_of_day = time_counter % n_steps
     return counter_of_day == 0 ? n_steps : counter_of_day
 end
+
+function _get_time_counter_from_continuous_time(
+    clock::Clock,
+    continuous::Union{Int, Float64},
+)::Int
+    return Int(continuous ÷ clock.time_step)
+end

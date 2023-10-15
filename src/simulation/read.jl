@@ -1,6 +1,7 @@
 using JSON
 using DataStructures
 using Statistics
+using Distributions
 
 function read(path::String)::SimulationInstance
     @info "Reading input file from $(path)..."
@@ -12,7 +13,7 @@ function read(path::String)::SimulationInstance
     network = _read_network_instance(json["Buses"], json["Transmission lines"])
     grid = _read_grid(json["Grid"], network, clock)
     agents = _read_agents(json["Agents"], network, clock, grid, demand_shape)
-    market = _construct_market(clock)
+    market = _read_market(json["Market"], clock)
     close(file)
     return SimulationInstance(
         clock = clock,
@@ -86,7 +87,7 @@ function _read_parameters(
         sys_time_step = time_step,
         arr_total_time = group_total_time,
         sys_total_time = total_time,
-        max_steps = clock.n_steps,
+        max_steps = n_steps,
     )
     if time_groups === nothing
         time_groups = ones(n_steps)
@@ -232,6 +233,27 @@ function _read_agents(
         end
     end
     return agents
+end
+
+```
+This function reads the network buses and lines
+```
+function _read_market(
+    market_dict::DefaultOrderedDict,
+    clock::Clock
+)::Market 
+    market_dict["Type"] !== nothing || error(
+        "Please specify a market type")
+    # get arrival
+    arrival = nothing
+    if market_dict["Arrival type"] == "Exponential"
+        arrival = Exponential(market_dict["Interarrival time (min)"])
+    end
+    # construct the market
+    if market_dict["Type"] === "CDA" 
+        return CDAMarket(arrival = arrival)
+    end
+    error("$(market_dict["Type"]) is not a supported market type.")
 end
 
 ```
