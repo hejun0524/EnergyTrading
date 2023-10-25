@@ -2,7 +2,7 @@ Base.@kwdef mutable struct Consumer <: Agent
     index::Int
     name::String 
     bus::Bus
-    buyers::Vector{Trader}
+    trader::Trader
     next_free_time::Int = 1
     in_market::Bool = false
     trading_history::Vector{Snapshot} = []
@@ -12,7 +12,7 @@ Base.@kwdef mutable struct Producer <: Agent
     index::Int
     name::String 
     bus::Bus
-    sellers::Vector{Trader}
+    trader::Trader
     next_free_time::Int = 1
     in_market::Bool = false
     trading_history::Vector{Snapshot} = []
@@ -24,8 +24,7 @@ Base.@kwdef mutable struct Prosumer <: Agent
     index::Int
     name::String 
     bus::Bus
-    buyers::Vector{Trader}
-    sellers::Vector{Trader}
+    trader::Trader
     next_free_time::Int = 1
     in_market::Bool = false
     in_market_as::String = ""

@@ -11,8 +11,15 @@ Base.@kwdef mutable struct ZIPTrader <: Trader
 end
 
 Base.@kwdef mutable struct RLTrader <: Trader
-    action_type::String 
-    limit_price::Vector{Float64}
-    current_price::Float64
-    price_history::Vector{Float64}
+    buying_limit_price::Vector{Float64}
+    selling_limit_price::Vector{Float64}
+    current_price::Float64 = 0.0
+    price_history::Vector{Float64} = Float64[]
+    # define the 5 network + buffer
+    actor_network = nothing
+    critic_network = nothing
+    auxiliary_critic_network = nothing 
+    value_network = nothing
+    target_value_network = nothing
+    buffer = nothing
 end

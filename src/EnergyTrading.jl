@@ -43,6 +43,12 @@ include("shape/forecast.jl")
 include("shape/real_time.jl")
 include("transaction/validate.jl")
 include("snapshot/snapshot.jl")
+include("trader/RLTrader/replay_buffer.jl")
+include("trader/RLTrader/neural_network.jl")
+include("trader/RLTrader/construct.jl")
+include("trader/construct.jl")
+
+# include all simulation entry file
 include("simulation/read.jl")
 include("simulation/RLSimulation/run.jl")
 

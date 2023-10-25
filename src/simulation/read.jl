@@ -157,6 +157,8 @@ function _read_shape_data(
     time_step = params["Time step (min)"]
     (total_time % time_step == 0) || error(
         "Shape file total time length is not divisible by the time step.")
+    (time_step % clock.time_step == 0) || error(
+        "Shape file time step is not divisible by the clock time step.")
     shape_data = zeros(total_time ÷ time_step)
     for (_, each_data) in dict["Data"]
         shape_data += each_data
@@ -169,7 +171,7 @@ function _read_shape_data(
         arr_total_time = total_time,
         sys_total_time = clock.T,
         max_steps = clock.n_steps,
-    ) / (use_time_divisor ? time_step : 1)
+    ) / (use_time_divisor ? (time_step ÷ clock.time_step) : 1)
     shape = Shape(
         shape_name,
         shape_data_corrected,
@@ -195,14 +197,14 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                buyers = Trader[]
+                trader = _construct_trader(agent_info["Trader"]),
             ))
         elseif agent_info["Role"] == "Producer"
             push!(agents, Producer(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                sellers = Trader[],
+                trader = _construct_trader(agent_info["Trader"]),
                 storage = Storage(
                     capacity = agent_info["Storage capacity"] == -1 ? 16 * demand_shape.average * agent_info["PV type"] : agent_info["Storage capacity"],
                     efficiency = agent_info["Storage efficiency"],
@@ -217,8 +219,7 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                buyers = Trader[],
-                sellers = Trader[],
+                trader = _construct_trader(agent_info["Trader"]),
                 storage = Storage(
                     capacity = agent_info["Storage capacity"] == -1 ? 16 * demand_shape.average * agent_info["PV type"] : agent_info["Storage capacity"],
                     efficiency = agent_info["Storage efficiency"],

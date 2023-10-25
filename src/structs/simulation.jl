@@ -14,6 +14,7 @@ end
 
 Base.@kwdef mutable struct RLSimulation <: BaseSimulationMethod 
     random_seed::Int = 100
+    episodes::Int = 200
 end
 
 Base.@kwdef mutable struct GridOnlySimulation <: BaseSimulationMethod 

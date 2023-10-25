@@ -11,8 +11,7 @@ function _generate_agent_order!(
     t_start = clock.time_counter # time counter at start
     t_length = _allocate_time_counts() # total time counts
     t_expire = t_start + t_length - 1
-    trader_group = clock.time_groups[t_start]
-    if typeof(agent) === Consumer 
+    if agent isa Consumer 
         # consumer get flexible demand
         current_demand = _get_real_time(demand_shape, t_start)
         flexible_demand = _get_forecast(
@@ -20,14 +19,14 @@ function _generate_agent_order!(
         if flexible_demand > 0.0
             return _generate_trader_order!(
                 agent, 
-                agent.buyers[trader_group],
+                agent.trader,
                 quantity = flexible_demand,
                 order_type = "bid",
                 time_counter_submit = t_start,
                 time_counter_expire = t_expire
             )
         end
-    elseif typeof(agent) === Producer 
+    elseif agent isa Producer 
         # producer get generation
         current_supply = _get_real_time(supply_shape, t_start)
         current_storage_flow = _update_storage!(agent.storage, current_supply)
@@ -42,14 +41,14 @@ function _generate_agent_order!(
             _freeze_storage!(agent.storage, ask_quantity)
             return _generate_trader_order!(
                 agent, 
-                agent.sellers[trader_group],
+                agent.trader,
                 quantity = ask_quantity,
                 order_type = "ask",
                 time_counter_submit = t_start,
                 time_counter_expire = t_expire
             )
         end
-    elseif typeof(agent) === Prosumer 
+    elseif agent isa Prosumer 
         # get flexible demand 
         current_demand = _get_real_time(demand_shape, t_start)
         flexible_demand = _get_forecast(
@@ -69,7 +68,7 @@ function _generate_agent_order!(
             _freeze_storage!(agent.storage, ask_quantity)
             return _generate_trader_order!(
                 agent, 
-                agent.sellers[trader_group],
+                agent.trader,
                 quantity = ask_quantity,
                 order_type = "ask",
                 time_counter_submit = t_start,
@@ -80,7 +79,7 @@ function _generate_agent_order!(
         if current_storage_flow < 0.0 
             return _generate_trader_order!(
                 agent, 
-                agent.buyers[trader_group],
+                agent.trader,
                 quantity = -current_storage_flow,
                 order_type = "bid",
                 time_counter_submit = t_start,

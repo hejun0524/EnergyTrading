@@ -5,7 +5,7 @@ function _grid_buy_from_agent!(
     network::NetworkInstance,
     clock::Clock,
 )
-    typeof(agent) === Producer || typeof(agent) === Prosumer || error(
+    agent isa Producer || agent isa Prosumer || error(
         "Grid can only buy from producers and prosumers.")
     # update grid
     grid.buy_in_quantity += quantity
@@ -22,7 +22,6 @@ function _grid_buy_from_agent!(
         clock = clock,
         price = grid.buy_in_price[clock.time_counter],
         quantity = quantity,
-        trader_group = clock.time_groups[clock.time_counter],
     )
 end
 
@@ -33,7 +32,7 @@ function _grid_sell_to_agent!(
     network::NetworkInstance,
     clock::Clock,
 )
-    typeof(agent) === Consumer || typeof(agent) === Prosumer || error(
+    agent isa Consumer || agent isa Prosumer || error(
         "Grid can only sell to consumers and prosumers.")
     # update grid
     grid.sell_out_quantity += quantity
@@ -50,6 +49,5 @@ function _grid_sell_to_agent!(
         clock = clock,
         price = grid.sell_out_price[clock.time_counter],
         quantity = quantity,
-        trader_group = clock.time_groups[clock.time_counter],
     )
 end
