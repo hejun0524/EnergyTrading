@@ -22,4 +22,5 @@ Base.@kwdef mutable struct RLTrader <: Trader
     value_network = nothing
     target_value_network = nothing
     buffer = nothing
+    batch_size::Int = 50
 end

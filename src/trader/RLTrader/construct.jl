@@ -1,5 +1,5 @@
 function _construct_RL_trader(;
-    n_actions = 4,
+    n_actions = 5,
     n_states = 14,
 )::RLTrader
     return RLTrader(
@@ -22,6 +22,7 @@ function _construct_RL_trader(;
         ),
         buffer = _construct_replay_buffer(
             100, n_states, n_actions
-        )
+        ),
+        batch_size = 50,
     )
 end
