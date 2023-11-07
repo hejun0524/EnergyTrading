@@ -24,21 +24,25 @@ function _remove_expired_orders!(
     for o in expired_bids
         o.agent.in_market = false
         (o.agent isa Prosumer) && (o.agent.in_market_as = "")
-        _grid_sell_to_agent!(grid, o.agent, o.quantity, network, clock)
-        push!(expired_transactions, Rejection(
+        # spending should be negative
+        reward = -_grid_sell_to_agent!(grid, o.agent, o.quantity, network, clock)
+        push!(expired_transactions, Rejection(            
             price = grid.sell_out_price[current_time_counter],
             time_counter = current_time_counter,
             last_shout = o,
+            reward = reward,
         ))
     end
     for o in expired_asks
         o.agent.in_market = false
         (o.agent isa Prosumer) && (o.agent.in_market_as = "")
-        _grid_buy_from_agent!(grid, o.agent, o.quantity, network, clock)
+        # earning should be positive
+        reward = _grid_buy_from_agent!(grid, o.agent, o.quantity, network, clock)
         push!(expired_transactions, Rejection(
             price = grid.buy_in_price[current_time_counter],
             time_counter = current_time_counter,
             last_shout = o,
+            reward = reward,
         ))
     end
     return expired_transactions

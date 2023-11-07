@@ -197,20 +197,21 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"]),
+                trader = _construct_trader(agent_info["Trader"], grid),
             ))
         elseif agent_info["Role"] == "Producer"
             push!(agents, Producer(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"]),
+                trader = _construct_trader(agent_info["Trader"], grid),
                 storage = Storage(
-                    capacity = agent_info["Storage capacity"] == -1 ? 16 * demand_shape.average * agent_info["PV type"] : agent_info["Storage capacity"],
+                    capacity = agent_info["Storage capacity"] == -1 ? ceil(
+                        16 * demand_shape.average * agent_info["PV type"]) : agent_info["Storage capacity"],
                     efficiency = agent_info["Storage efficiency"],
                 ),
                 panel = SolarPanel(
-                    max_rate = demand_shape.average * agent_info["PV type"],
+                    max_rate = ceil(demand_shape.average * agent_info["PV type"]),
                     efficiency = agent_info["PV efficiency"]
                 )
             ))
@@ -219,13 +220,14 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"]),
+                trader = _construct_trader(agent_info["Trader"], grid),
                 storage = Storage(
-                    capacity = agent_info["Storage capacity"] == -1 ? 16 * demand_shape.average * agent_info["PV type"] : agent_info["Storage capacity"],
+                    capacity = agent_info["Storage capacity"] == -1 ? ceil(
+                        16 * demand_shape.average * agent_info["PV type"]) : agent_info["Storage capacity"],
                     efficiency = agent_info["Storage efficiency"],
                 ),
                 panel = SolarPanel(
-                    max_rate = demand_shape.average * agent_info["PV type"],
+                    max_rate = ceil(demand_shape.average * agent_info["PV type"]),
                     efficiency = agent_info["PV efficiency"]
                 )
             ))
@@ -252,7 +254,11 @@ function _read_market(
     end
     # construct the market
     if market_dict["Type"] === "CDA" 
-        return CDAMarket(arrival = arrival)
+        return CDAMarket(
+            arrival = arrival,
+            price_history = zeros(clock.n_steps_one_day),
+            quantity_history = zeros(clock.n_steps_one_day),
+        )
     end
     error("$(market_dict["Type"]) is not a supported market type.")
 end

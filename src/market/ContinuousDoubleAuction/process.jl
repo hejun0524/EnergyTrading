@@ -51,6 +51,7 @@ function _match_and_process_orders!(
                     best_bid.quantity -= cleared_quantity
                     best_bid.priority = -999
                 end
+                deal.reward = cleared_price * cleared_quantity - deal.utilization_charge - deal.loss_charge
             else
                 # mark skip flag for whichever comes second 
                 last_shout.skip = true
