@@ -16,10 +16,12 @@ Base.@kwdef mutable struct Deal <: Transaction
     is_valid_flow::Bool = true
     loss_charge::Float64 = 0.0
     utilization_charge::Float64 = 0.0
+    reward::Float64 = 0.0
 end
 
 Base.@kwdef mutable struct Rejection <: Transaction
     price::Float64
     time_counter::Int
     last_shout::Order
+    reward::Float64 = 0.0
 end

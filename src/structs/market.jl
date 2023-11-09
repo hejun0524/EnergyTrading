@@ -6,4 +6,6 @@ Base.@kwdef mutable struct CDAMarket <: Market
     book_sell::Vector{Order} = Order[]
     most_recent_order::Union{Order, Nothing} = nothing 
     clearing_history::Vector{Transaction} = Transaction[]
+    price_history::Vector{Float64}
+    quantity_history::Vector{Float64}
 end

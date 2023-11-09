@@ -15,12 +15,11 @@ Base.@kwdef mutable struct RLTrader <: Trader
     selling_limit_price::Vector{Float64}
     current_price::Float64 = 0.0
     price_history::Vector{Float64} = Float64[]
-    # define the 5 network + buffer
+    # define the 4 network + buffer
     actor_network = nothing
     critic_network = nothing
-    auxiliary_critic_network = nothing 
-    value_network = nothing
-    target_value_network = nothing
+    target_actor_network = nothing 
+    target_critic_network = nothing
     buffer = nothing
     batch_size::Int = 50
 end

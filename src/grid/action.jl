@@ -4,12 +4,13 @@ function _grid_buy_from_agent!(
     quantity::Float64,
     network::NetworkInstance,
     clock::Clock,
-)
+)::Float64
     agent isa Producer || agent isa Prosumer || error(
         "Grid can only buy from producers and prosumers.")
     # update grid
     grid.buy_in_quantity += quantity
-    grid.cost += quantity * grid.buy_in_price[clock.time_counter]
+    grid_cost = quantity * grid.buy_in_price[clock.time_counter]
+    grid.cost += grid_cost
     # update network
     vsc = _compute_vsc(network, agent.bus)
     ptdf = _compute_ptdf(network, agent.bus, grid.bus) # agent to grid
@@ -23,6 +24,7 @@ function _grid_buy_from_agent!(
         price = grid.buy_in_price[clock.time_counter],
         quantity = quantity,
     )
+    return grid_cost
 end
 
 function _grid_sell_to_agent!(
@@ -31,12 +33,13 @@ function _grid_sell_to_agent!(
     quantity::Float64,
     network::NetworkInstance,
     clock::Clock,
-)
+)::Float64
     agent isa Consumer || agent isa Prosumer || error(
         "Grid can only sell to consumers and prosumers.")
     # update grid
     grid.sell_out_quantity += quantity
-    grid.revenue += quantity * grid.sell_out_price[clock.time_counter]
+    grid_revenue = quantity * grid.sell_out_price[clock.time_counter]
+    grid.revenue += grid_revenue
     # update network
     vsc = _compute_vsc(network, agent.bus)
     ptdf = _compute_ptdf(network, grid.bus, agent.bus) # grid to agent
@@ -50,4 +53,5 @@ function _grid_sell_to_agent!(
         price = grid.sell_out_price[clock.time_counter],
         quantity = quantity,
     )
+    return grid_revenue
 end

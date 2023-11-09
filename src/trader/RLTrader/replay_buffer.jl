@@ -32,12 +32,12 @@ end
 
 # store new memory to replay buffer 
 function _store_new_memory!(
-    buffer::ReplayBuffer,
+    buffer::ReplayBuffer;
     state::Vector{Any},
     action::Vector{Any},
-    reward::Float64,
-    next_state::Vector{Any},
-    done::Bool,
+    reward::Float64 = 0.0,
+    next_state::Vector{Any} = [],
+    done::Bool = false,
 )
     # get the buffer index 
     idx = (buffer.memory_counter % buffer.max_memory_size) + 1
@@ -49,6 +49,40 @@ function _store_new_memory!(
     buffer.terminal_memory[idx] = done
     # increase the counter by 1
     buffer.memory_counter += 1    
+end
+
+# modify memory in replay buffer 
+function _modify_memory!(
+    buffer::ReplayBuffer,
+    target_memory_counter::Int;
+    state::Union{Vector{Any}, Nothing} = nothing,
+    action::Union{Vector{Any}, Nothing} = nothing,
+    reward::Union{Float64, Nothing} = nothing,
+    reward_discount::Float64 = 1.0,
+    next_state::Union{Vector{Any}, Nothing} = nothing,
+    done::Union{Bool, Nothing} = nothing,
+)
+    # get the buffer index 
+    idx = (target_memory_counter % buffer.max_memory_size) + 1
+    # store the memory 
+    if state !== nothing
+        buffer.state_memory[idx] = state 
+    end
+    if action !== nothing
+        buffer.action_memory[idx] = action
+    end
+    if reward !== nothing
+        # reward_discount = 1.0 for cumulating
+        # reward_discount = 0.0 for replacing
+        prev_reward = buffer.reward_memory[idx] * reward_discount
+        buffer.reward_memory[idx] = prev_reward + reward
+    end
+    if next_state !== nothing 
+        buffer.next_state_memory[idx] = next_state
+    end
+    if done !== nothing 
+        buffer.terminal_memory[idx] = done
+    end
 end
 
 # sample the memory buffer
