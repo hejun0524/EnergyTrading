@@ -3,9 +3,11 @@ function _run_episode!(
 )
     # initiate arrival time 
     arrival_time = 0.0
-    # reset clock 
+    # reset clock and market
     _reset_clock!(instance.clock)
+    _reset_market!(instance.market, instance.agents)
     # clock must be discrete to sync with system
+    fred = 0
     while !_is_over(instance.clock)
         # proceed the time at the beginning
         _proceed_time!(instance.clock)
@@ -71,37 +73,24 @@ function _run_episode!(
                     done = _is_over(instance.clock),
                 )
                 # learning
-                try 
-                    _learn!(agent.trader)
-                catch e 
-                    @show agent.index 
-                    zs = findall(x -> length(x) == 0, agent.trader.buffer.next_state_memory)
-                    @show zs
-                    rethrow(e)
-                end
+                _learn!(agent.trader)
+                fred += 1
             end
             # generate new action
-            try 
-                new_order, action = _generate_trader_order!(
-                    agent,
-                    agent.trader,
-                    instance.clock,
-                    curr_state,
-                )
-                push!(new_orders, new_order)
-                # store as new memory
-                _store_new_memory!(
-                    agent.trader.buffer,
-                    state = deepcopy(curr_state),
-                    action = action,
-                    done = _is_over(instance.clock),
-                )
-            catch e 
-                @show agent.index 
-                @show curr_state
-                @show length(curr_state)
-                rethrow(e)
-            end
+            new_order, action = _generate_trader_order!(
+                agent,
+                agent.trader,
+                instance.clock,
+                curr_state,
+            )
+            push!(new_orders, new_order)
+            # store as new memory
+            _store_new_memory!(
+                agent.trader.buffer,
+                state = deepcopy(curr_state),
+                action = action,
+                done = _is_over(instance.clock),
+            )
         end
 
         # market receive and sort orders 
@@ -149,4 +138,5 @@ function _run_episode!(
             _append_current_trader_price!(agent.trader)
         end
     end
+    println("Learned $(fred) times")
 end
