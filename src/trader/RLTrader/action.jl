@@ -4,8 +4,8 @@ function _generate_trader_order!(
     agent::Agent,
     trader::RLTrader,
     clock::Clock,
-    states::Vector{Any},
-)::Tuple{Order, Vector{Any}}
+    states::Vector{Float64},
+)::Tuple{Order, Vector{Float64}}
     actions = trader.actor_network.model(states)
     # add some noise to the actions
     actions += rand(Normal(0, 0.1), length(actions))

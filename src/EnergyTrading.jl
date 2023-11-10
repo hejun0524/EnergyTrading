@@ -49,10 +49,12 @@ include("trader/RLTrader/neural_network.jl")
 include("trader/RLTrader/construct.jl")
 include("trader/RLTrader/state.jl")
 include("trader/RLTrader/action.jl")
+include("trader/RLTrader/learn.jl")
 include("trader/construct.jl")
 
 # include all simulation entry file
 include("simulation/read.jl")
+include("simulation/RLSimulation/episode.jl")
 include("simulation/RLSimulation/run.jl")
 
 

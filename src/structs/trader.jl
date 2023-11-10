@@ -22,4 +22,9 @@ Base.@kwdef mutable struct RLTrader <: Trader
     target_critic_network = nothing
     buffer = nothing
     batch_size::Int = 50
+    # define parameters 
+    α::Float64 = 0.001
+    β::Float64 = 0.002
+    γ::Float64 = 0.99
+    τ::Float64 = 0.005
 end

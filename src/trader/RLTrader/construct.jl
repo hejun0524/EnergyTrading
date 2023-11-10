@@ -2,8 +2,8 @@ function _construct_RL_trader(
     grid::Grid;
     n_actions::Int = 3,
     n_states::Int = 41,
-    buffer_size::Int = 100,
-    batch_size::Int = 50,
+    buffer_size::Int = 10,
+    batch_size::Int = 5,
 )::RLTrader
     return RLTrader(
         buying_limit_price = grid.sell_out_price,

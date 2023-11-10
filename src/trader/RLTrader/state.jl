@@ -2,9 +2,11 @@ function _get_observations!(
     agent::Agent,
     market::CDAMarket,
     clock::Clock,
+    demand_shape::Shape,
+    supply_shape::Shape,
     grid::Grid,
     network::NetworkInstance,
-)::Vector{Any}
+)::Vector{Float64}
     time_of_day = _get_time_counter_of_day(clock)
     agent_can_produce = agent isa Prosumer || agent isa Producer 
     panel_efficiency = agent_can_produce ? agent.panel.efficiency : 0.0
@@ -13,7 +15,7 @@ function _get_observations!(
     storage_size = agent_can_produce ? agent.storage.capacity : 0.0
     # 12 time slots demand forecast (6 - 17)
     demand_forecast = agent isa Producer ? zeros(12) : _get_forecast(
-        agent.demand, clock.time_counter, 12)
+        demand_shape, clock.time_counter, 12)
     # some agent may need to prosume 
     if agent_can_produce
         current_supply = _get_real_time(supply_shape, clock.time_counter)
@@ -34,6 +36,16 @@ function _get_observations!(
     ts = [_get_time_counter_of_day(clock, k) for k = t0:t1]
     market_price = market.price_history[ts]
     market_quantity = market.quantity_history[ts]
+    # correct size
+    if length(demand_forecast) < 12 
+        demand_forecast = [demand_forecast; zeros(12 - length(demand_forecast))]
+    end
+    if length(market_price) < 12 
+        market_price = [market_price; zeros(12 - length(market_price))]
+    end
+    if length(market_quantity) < 12 
+        market_quantity = [market_quantity; zeros(12 - length(market_quantity))]
+    end
     # return states
     return [
         time_of_day,
