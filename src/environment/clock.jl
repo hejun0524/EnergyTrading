@@ -23,3 +23,8 @@ function _get_time_counter_from_continuous_time(
 )::Int
     return Int(continuous ÷ clock.time_step)
 end
+
+function _reset_clock!(clock::Clock)
+    clock.time_counter = 0
+    clock.time_now = 0
+end
