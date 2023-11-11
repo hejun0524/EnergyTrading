@@ -8,7 +8,7 @@ function solution(instance::SimulationInstance)::OrderedDict
     sol["Market clearing history"] = OrderedDict(
         "Total number" => length(market_clearing_log),
         # "Cached clearing prices" => vec(mean(instance.market.clearing_prices, dims = 1)),
-        "Cached bid quantities" => vec(mean(instance.market.bid_quantities, dims = 1)),
+        # "Cached bid quantities" => vec(mean(instance.market.bid_quantities, dims = 1)),
         "Log" => market_clearing_log
     )
 
@@ -16,19 +16,15 @@ function solution(instance::SimulationInstance)::OrderedDict
     sol["Trader bid price history"] = OrderedDict(
         agent.name => OrderedDict(
             "Bus" => agent.bus.name,
-            "Traders (buyers)" => OrderedDict(
-                "Group $(td.trader_group)" => td.price_history for td in agent.buyers
-            ) 
-        ) for agent in instance.agents if (typeof(agent) === Consumer || typeof(agent) === Prosumer)
+            "Traders (buyers)" => agent.trader.price_history
+        ) for agent in instance.agents if (agent isa Consumer || agent isa Prosumer)
     )
 
     sol["Trader ask price history"] = OrderedDict(
         agent.name => OrderedDict(
             "Bus" => agent.bus.name,
-            "Traders (sellers)" => OrderedDict(
-                "Group $(td.trader_group)" => td.price_history for td in agent.sellers
-            ) 
-        ) for agent in instance.agents if (typeof(agent) === Producer || typeof(agent) === Prosumer)
+            "Traders (sellers)" => agent.trader.price_history
+        ) for agent in instance.agents if (agent isa Producer || agent isa Prosumer)
     )
 
     # report agent revenue
@@ -62,7 +58,6 @@ function _retrieve_log(agent::Agent)
     log = [
         OrderedDict(
             "Time counter" => snap.time_counter,
-            "Trader group" => snap.trader_group,
             "Action" => snap.action,
             "Target" => _get_target_name(snap.target),
             "Price" => snap.price,

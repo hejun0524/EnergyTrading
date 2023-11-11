@@ -44,5 +44,7 @@ function _generate_trader_order!(
         time_counter_submit = clock.time_counter,
         time_counter_expire = time_counter_expire,
     )
+    # update the current price
+    trader.current_price = p
     return new_order, actions
 end
