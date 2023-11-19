@@ -163,6 +163,9 @@ function _read_shape_data(
     for (_, each_data) in dict["Data"]
         shape_data += each_data
     end
+    if use_time_divisor
+        shape_data /= time_step ÷ clock.time_step
+    end
 
     shape_data_corrected = _time_dimension_adjust(
         shape_data,
@@ -171,11 +174,14 @@ function _read_shape_data(
         arr_total_time = total_time,
         sys_total_time = clock.T,
         max_steps = clock.n_steps,
-    ) / (use_time_divisor ? (time_step ÷ clock.time_step) : 1)
+    )
     shape = Shape(
         shape_name,
         shape_data_corrected,
+        shape_data,
         mean(shape_data),
+        time_step,
+        total_time,
     )
     return shape
 end
