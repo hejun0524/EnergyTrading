@@ -11,6 +11,7 @@ end
 function load_models!(
     instance::SimulationInstance;
     dir::String = ".",
+    ignore_nonexisiting::Bool = false,
 )
     for agent in instance.agents
         networks = [
@@ -21,8 +22,12 @@ function load_models!(
         ]
         for n in networks
             jld2fname = _model_state_name(dir, agent, n)
-            model_state = JLD2.load(jld2fname, "model_state")
-            Flux.loadmodel!(n.model, model_state)
+            if !ispath(jld2fname)
+                ignore_nonexisiting || error("File does not exist.")
+            else
+                model_state = JLD2.load(jld2fname, "model_state")
+                Flux.loadmodel!(n.model, model_state)
+            end            
         end
     end
 end
@@ -32,6 +37,7 @@ function save_models(
     instance::SimulationInstance;
     dir::String = ".",
 )
+    isdir(dir) || mkdir(dir)
     for agent in instance.agents
         networks = [
             agent.trader.actor_network,
