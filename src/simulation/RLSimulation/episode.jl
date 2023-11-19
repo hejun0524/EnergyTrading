@@ -1,5 +1,6 @@
 function _run_episode!(
     instance::SimulationInstance,
+    evaluate::Bool,
 )
     # initiate arrival time 
     arrival_time = 0.0
@@ -7,7 +8,7 @@ function _run_episode!(
     _reset_clock!(instance.clock)
     _reset_market!(instance.market, instance.agents)
     # clock must be discrete to sync with system
-    fred = 0
+    learning_counter = 0
     while !_is_over(instance.clock)
         # proceed the time at the beginning
         _proceed_time!(instance.clock)
@@ -73,8 +74,10 @@ function _run_episode!(
                     done = _is_over(instance.clock),
                 )
                 # learning
-                _learn!(agent.trader)
-                fred += 1
+                if !evaluate
+                    _learn!(agent.trader)
+                    learning_counter += 1
+                end
             end
             # generate new action
             new_order, action = _generate_trader_order!(
@@ -138,5 +141,5 @@ function _run_episode!(
             _append_current_trader_price!(agent.trader)
         end
     end
-    println("Learned $(fred) times")
+    @info "Learned $(learning_counter) times"
 end
