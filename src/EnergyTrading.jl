@@ -52,7 +52,7 @@ include("trader/RLTrader/construct.jl")
 include("trader/RLTrader/state.jl")
 include("trader/RLTrader/action.jl")
 include("trader/RLTrader/learn.jl")
-include("trader/RLTrader/jld2.jl")
+include("trader/RLTrader/model_states.jl")
 include("trader/construct.jl")
 
 # include all simulation entry file
