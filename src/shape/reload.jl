@@ -1,6 +1,6 @@
 using Statistics
 
-function _raload_shape!(
+function _reload_shape!(
     shape::Shape,
     clock::Clock,
 )
@@ -10,9 +10,12 @@ function _raload_shape!(
     range = (1:period:shape.total_time)[1:end-1]
     p0 = rand(range)
     p1 = p0 + period - 1
+    # get idx in raw data
+    raw_p0 = p0 ÷ shape.time_step + 1
+    raw_p1 = p1 ÷ shape.time_step + 1
     # time dim adjust
     shape.data = _time_dimension_adjust(
-        shape.raw_data[p0÷shape.time_step:p1÷shape.time_step],
+        shape.raw_data[raw_p0:raw_p1],
         arr_time_step = shape.time_step,
         sys_time_step = clock.time_step,
         arr_total_time = shape.total_time,

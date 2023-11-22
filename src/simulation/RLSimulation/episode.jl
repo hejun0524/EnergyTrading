@@ -7,8 +7,8 @@ function _run_episode!(
     # reset clock and market
     _reset_clock!(instance.clock)
     _reset_market!(instance.market, instance.agents)
-    _raload_shape!(instance.demand, instance.clock)
-    _raload_shape!(instance.supply, instance.clock)
+    _reload_shape!(instance.demand, instance.clock)
+    _reload_shape!(instance.supply, instance.clock)
     # clock must be discrete to sync with system
     learning_counter = 0
     while !_is_over(instance.clock)
