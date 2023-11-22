@@ -18,4 +18,4 @@ EnergyTrading.simulate!(instance, EnergyTrading.RLSimulation(evaluate=true))
 
 # get test results and write to output.json
 solution = EnergyTrading.solution(instance)
-EnergyTrading.write("output.json", instance)
+EnergyTrading.write("output.json", solution)
