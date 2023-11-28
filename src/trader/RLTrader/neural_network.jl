@@ -1,4 +1,4 @@
-using Flux 
+using Flux
 
 # store model and opt state in a struct 
 struct Network 

@@ -14,7 +14,6 @@ function _run_episode!(
     while !_is_over(instance.clock)
         # proceed the time at the beginning
         _proceed_time!(instance.clock)
-        _display_progress(instance.clock)
 
         # market remove old orders, some agents receive reward
         expired_transactions = _remove_expired_orders!(

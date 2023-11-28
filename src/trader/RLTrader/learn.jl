@@ -1,4 +1,4 @@
-using Flux 
+using Flux
 
 function _learn!(
     trader::RLTrader,
@@ -21,7 +21,7 @@ function _learn!(
     end
     # optimize critic
     # critic_loss(x, y) = sum(Flux.mse(trader.critic_network.model(x...), y))
-    critic_data = Flux.DataLoader((critic_inputs, critic_labels))
+    critic_data = Flux.DataLoader((critic_inputs, critic_labels)) |> gpu
     # critic_ps = Flux.params(trader.critic_network.model)
     # Flux.train!(critic_loss, critic_ps, critic_data, trader.critic_network.opt_state)
     for data in critic_data
@@ -45,7 +45,7 @@ function _learn!(
     # optimize actor
     actor_loss(x) = sum(Flux.mean(
         -trader.critic_network.model(x..., trader.actor_network.model(x...))))
-    actor_data = Flux.DataLoader(actor_inputs)
+    actor_data = Flux.DataLoader(actor_inputs) |> gpu
     # actor_ps = Flux.params(trader.actor_network.model)
     # Flux.train!(actor_loss, actor_ps, actor_data, trader.actor_network.opt_state)
     for input in actor_data
