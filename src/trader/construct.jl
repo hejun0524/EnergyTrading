@@ -1,9 +1,10 @@
 function _construct_trader(
     trader_type::String,
+    market::Market,
     grid::Grid,
 )::Trader
     if trader_type == "RL trader"
-        return _construct_RL_trader(grid)
+        return _construct_RL_trader(market, grid)
     elseif trader_type == "ZIP trader"
         # return _construct_RL_trader(grid)
     end

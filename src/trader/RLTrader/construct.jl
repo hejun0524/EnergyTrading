@@ -1,10 +1,10 @@
 function _construct_RL_trader(
+    market::Market,
     grid::Grid;
-    n_actions::Int = 3,
-    n_states::Int = 41,
-    buffer_size::Int = 10,
-    batch_size::Int = 5,
+    buffer_size::Int = 100,
+    batch_size::Int = 50,
 )::RLTrader
+    n_actions, n_states = _cardinality(market)
     return RLTrader(
         buying_limit_price = grid.sell_out_price,
         selling_limit_price = grid.buy_in_price,
@@ -25,4 +25,10 @@ function _construct_RL_trader(
         ),
         batch_size = batch_size,
     )
+end
+
+function _cardinality(market::Market)::Tuple{Int, Int}
+    (market isa CDAMarket) && return (3, 41)
+    (market isa QuantityCDAMarket) && return (2, 33)
+    error("The market type is not defined.")
 end

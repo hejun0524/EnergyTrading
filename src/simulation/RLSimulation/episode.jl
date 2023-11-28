@@ -84,6 +84,7 @@ function _run_episode!(
             # generate new action
             new_order, action = _generate_trader_order!(
                 agent,
+                instance.market,
                 agent.trader,
                 instance.clock,
                 curr_state,

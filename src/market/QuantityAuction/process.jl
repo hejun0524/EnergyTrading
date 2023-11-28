@@ -1,5 +1,5 @@
 function _match_and_process_orders!(
-    market::CDAMarket,
+    market::QuantityCDAMarket,
     network::NetworkInstance,
     grid::Grid,
     clock::Clock
@@ -52,6 +52,10 @@ function _match_and_process_orders!(
                     best_bid.priority = -999
                 end
                 deal.reward = cleared_price * cleared_quantity - deal.utilization_charge - deal.loss_charge
+                # update market
+                market.current_demand -= cleared_quantity
+                market.current_supply -= cleared_quantity
+                _update_ratio!(market, clock)
             else
                 # mark skip flag for whichever comes second 
                 last_shout.skip = true
@@ -67,23 +71,4 @@ function _match_and_process_orders!(
         end
     end
     return Waiting(time_counter = clock.time_counter)
-end
-
-function _get_best_order(
-    book::Vector{Order}
-)::Tuple{Union{Order, Nothing}, Int}
-    n = length(book)
-    for i = 1:n
-        book[i].skip || return (book[i], i)
-    end
-    return (nothing, 0)
-end
-
-function _remove_skip_flags!(market::Union{CDAMarket, QuantityCDAMarket})
-    for order in market.book_sell
-        order.skip = false
-    end
-    for order in market.book_buy
-        order.skip = false
-    end
 end

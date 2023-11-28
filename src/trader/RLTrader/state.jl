@@ -1,6 +1,6 @@
 function _get_observations!(
     agent::Agent,
-    market::CDAMarket,
+    market::Market,
     clock::Clock,
     demand_shape::Shape,
     supply_shape::Shape,
@@ -30,22 +30,12 @@ function _get_observations!(
             demand_forecast[1] = abs(current_storage_flow)
         end
     end
+    _size_correction!(demand_forecast, 12)
     # market price and quantity of next 12 time slots (18 - 41)
     t0 = clock.time_counter
     t1 = min(clock.n_steps, t0 + 11)
     ts = [_get_time_counter_of_day(clock, k) for k = t0:t1]
-    market_price = market.price_history[ts]
-    market_quantity = market.quantity_history[ts]
-    # correct size
-    if length(demand_forecast) < 12 
-        demand_forecast = [demand_forecast; zeros(12 - length(demand_forecast))]
-    end
-    if length(market_price) < 12 
-        market_price = [market_price; zeros(12 - length(market_price))]
-    end
-    if length(market_quantity) < 12 
-        market_quantity = [market_quantity; zeros(12 - length(market_quantity))]
-    end
+    market_data = _get_market_observations(market, ts)
     # return states
     return [
         time_of_day,
@@ -54,7 +44,43 @@ function _get_observations!(
         storage_status,
         storage_size,
         demand_forecast...,
+        market_data...,
+    ]
+end
+
+function _size_correction!(v::Vector, k::Int)
+    if length(v) < k 
+        push!(v, zeros(k - length(v))...)
+    end
+end
+
+function _get_market_observations(
+    market::CDAMarket,
+    ts::Vector{Int},
+)
+    market_price = market.price_history[ts]
+    market_quantity = market.quantity_history[ts]
+    _size_correction!(market_price, 12)
+    _size_correction!(market_quantity, 12)
+    # 24 elements
+    return [
         market_price...,
         market_quantity...,
+    ]
+end
+
+function _get_market_observations(
+    market::QuantityCDAMarket,
+    ts::Vector{Int},
+)
+    market_ratio = market.ratio_history[ts]
+    _size_correction!(market_ratio, 12)
+    # 16 elements
+    return [
+        market.current_supply,
+        market.current_demand,
+        market.current_ratio,
+        market.current_price,
+        market_ratio...,
     ]
 end

@@ -12,8 +12,8 @@ function read(path::String)::SimulationInstance
     supply_shape = _read_shape_data(json["Supplies"], clock, "supply", use_time_divisor = false)
     network = _read_network_instance(json["Buses"], json["Transmission lines"])
     grid = _read_grid(json["Grid"], network, clock)
-    agents = _read_agents(json["Agents"], network, clock, grid, demand_shape)
-    market = _read_market(json["Market"], clock)
+    market = _read_market(json["Market"], grid, clock)
+    agents = _read_agents(json["Agents"], network, market, grid, demand_shape)
     close(file)
     return SimulationInstance(
         clock = clock,
@@ -192,7 +192,7 @@ This function reads the agents
 function _read_agents(
     agent_dict::DefaultOrderedDict,
     network::NetworkInstance,
-    clock::Clock,
+    market::Market,
     grid::Grid,
     demand_shape::Shape,
 )::Vector{Agent}
@@ -203,14 +203,14 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"], grid),
+                trader = _construct_trader(agent_info["Trader"], market, grid),
             ))
         elseif agent_info["Role"] == "Producer"
             push!(agents, Producer(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"], grid),
+                trader = _construct_trader(agent_info["Trader"], market, grid),
                 storage = Storage(
                     capacity = agent_info["Storage capacity"] == -1 ? ceil(
                         16 * demand_shape.average * agent_info["PV type"]) : agent_info["Storage capacity"],
@@ -226,7 +226,7 @@ function _read_agents(
                 index = length(agents) + 1,
                 name = name,
                 bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"], grid),
+                trader = _construct_trader(agent_info["Trader"], market, grid),
                 storage = Storage(
                     capacity = agent_info["Storage capacity"] == -1 ? ceil(
                         16 * demand_shape.average * agent_info["PV type"]) : agent_info["Storage capacity"],
@@ -249,13 +249,14 @@ This function reads the network buses and lines
 ```
 function _read_market(
     market_dict::DefaultOrderedDict,
+    grid::Grid,
     clock::Clock
 )::Market 
     market_dict["Type"] !== nothing || error(
         "Please specify a market type")
     # get arrival
     arrival = nothing
-    if market_dict["Arrival type"] == "Exponential"
+    if market_dict["Arrival type"] === "Exponential"
         arrival = Exponential(market_dict["Interarrival time (min)"])
     end
     # construct the market
@@ -264,6 +265,16 @@ function _read_market(
             arrival = arrival,
             price_history = zeros(clock.n_steps_one_day),
             quantity_history = zeros(clock.n_steps_one_day),
+        )
+    elseif market_dict["Type"] === "SDR"
+        return QuantityCDAMarket(
+            arrival = arrival,
+            max_price = grid.sell_out_price,
+            min_price = grid.buy_in_price,
+            price_history = zeros(clock.n_steps_one_day),
+            supply_history = zeros(clock.n_steps_one_day),
+            demand_history = zeros(clock.n_steps_one_day),
+            ratio_history = zeros(clock.n_steps_one_day),
         )
     end
     error("$(market_dict["Type"]) is not a supported market type.")
