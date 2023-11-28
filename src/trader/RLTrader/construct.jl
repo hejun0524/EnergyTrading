@@ -2,7 +2,7 @@ function _construct_RL_trader(
     market::Market,
     grid::Grid;
     buffer_size::Int = 100,
-    batch_size::Int = 50,
+    batch_size::Int = 20,
 )::RLTrader
     n_actions, n_states = _cardinality(market)
     return RLTrader(

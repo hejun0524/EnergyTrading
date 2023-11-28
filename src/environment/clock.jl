@@ -28,3 +28,7 @@ function _reset_clock!(clock::Clock)
     clock.time_counter = 0
     clock.time_now = 0
 end
+
+function _display_progress(clock::Clock)
+    print("Currently on clock $(clock.time_now) / $(clock.T) \r")
+end
