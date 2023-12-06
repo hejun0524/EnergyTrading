@@ -1,7 +1,7 @@
 ## Energy Trading
 
 ### Objective function
-For each individual agent, the objective function is to maximize $ \sum_{t=1}^{T} r_t $,
+For each individual agent, the objective function is to maximize $\sum_{t=1}^T r_t$,
 where $T = 288$ is the total number of time slots of the episodes since we are setting the market to run for 3 days and each time step is 15 minutes.
 
 ### Step reward
@@ -29,3 +29,14 @@ Although an order consists of price, quantity and duration, here we let the agen
 1. $Q = \pi(\text{states})$, which is the only action for RL.
 2. $P = 15 - 13 \times SDR$, (grid prices \$2 and \$15 as the floor and ceiling.) Here, $SDR \in [0, 1]$. If $SDR$ falls out of this range, we clip it to either the floor or the ceiling.
 3. $t_d = 4$, which is one hour fixed.
+
+### Constraints
+The constraints are only about the $Q$. At each time, the agent has a different range for $Q$. Let $Q$ at each time $t$ be $Q_t$, determined through the policy NN.
+1. The maximal amount he/she can buy is $Q^B_t = \sum_{\tau=t}^{\max(t+t_d, T)} L_d + (\overline{B} - B_t)$ which is the sum of the hour's load demand and how much more the battery can charge (pure consumer has the second term equal to 0).
+2. The maximal amount he/she can sell is $Q^S_t = B_{\tau}$, which is the current level. 
+3. The range is therefore $Q_t \in [-Q^B_t, Q^S_t]$.
+
+There are 3 ways to model it. It seems to me the second one makes more sense.
+1. First is to let the NN output layer to be either a sigmoid function or $\tanh$, and then map the value to this range. This ensures that the agent's action always satisfy the changing range. 
+2. The second way is to let the NN output the quantity directly and clip it by the range. This way the agent only learns about actions within the action space and the weights of the network would eventually be adjusted to only output actions within this action space, provided that the boundaries aren't the optimal actions.
+3. The third one is to use punishment term in the reward function. But I do not know how much punishment to set. 
