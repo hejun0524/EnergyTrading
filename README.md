@@ -32,8 +32,8 @@ Although an order consists of price, quantity and duration, here we let the agen
 
 ### Constraints
 The constraints are only about the $Q$. At each time, the agent has a different range for $Q$. Let $Q$ at each time $t$ be $Q_t$, determined through the policy NN.
-1. The maximal amount he/she can buy is $Q^B_t = \sum_{\tau=t}^{\max(t+t_d, T)} L_d + (\overline{B} - B_t)$ which is the sum of the hour's load demand and how much more the battery can charge (pure consumer has the second term equal to 0).
-2. The maximal amount he/she can sell is $Q^S_t = B_{\tau}$, which is the current level. 
+1. The maximal amount he/she can buy is $$Q^B_t = \sum_{\tau=t}^{\max(t+t_d, T)} L_d + (\overline{B} - B_t)$$ which is the sum of the hour's load demand and how much more the battery can charge (pure consumer has the second term equal to 0).
+2. The maximal amount he/she can sell is $Q^S_t = B_t$, which is the current level. 
 3. The range is therefore $Q_t \in [-Q^B_t, Q^S_t]$.
 
 There are 3 ways to model it. It seems to me the second one makes more sense.
