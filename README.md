@@ -1,7 +1,7 @@
 ## Energy Trading
 
 ### Objective function
-For each individual agent, the objective function is $ \max \sum_{t=1}^{T} r_t $,
+For each individual agent, the objective function is to maximize $ \sum_{t=1}^{T} r_t $,
 where $T = 288$ is the total number of time slots of the episodes since we are setting the market to run for 3 days and each time step is 15 minutes.
 
 ### Step reward
