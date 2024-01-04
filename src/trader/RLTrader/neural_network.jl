@@ -15,17 +15,20 @@ function _construct_neural_network(
     activation = nothing
 )::Network
     # specify the model
-    fc1 = Dense(in_dim => 64, relu)
-    fc2 = LSTM(64 => 64)
-    if activation === "tanh"
-        out = Dense(64 => out_dim, tanh)
-    elseif activation === "sigmoid"
-        out = Dense(64 => out_dim, sigmoid)
+    if activation == "softmax"
+        model = Chain(
+            Dense(in_dim => 64, relu), 
+            LSTM(64 => 64), 
+            Dense(64 => out_dim, relu),
+            softmax
+        ) |> gpu 
     else
-        out = Dense(64 => out_dim)
+        model = Chain(
+            Dense(in_dim => 64, relu), 
+            LSTM(64 => 64), 
+            Dense(64 => out_dim),
+        ) |> gpu 
     end
-    
-    model = Chain(fc1, fc2, out) |> gpu 
     opt_state = Flux.setup(Adam(), model)
 
     return Network(name, model, opt_state)

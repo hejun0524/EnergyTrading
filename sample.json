@@ -1,7 +1,7 @@
 {
     "Parameters": {
       "Total time (d)": 3,
-      "Time step (min)": 5
+      "Time step (min)": 15
     },
     "Market": {
       "Type": "SDR"
@@ -12,65 +12,15 @@
         "Time step (min)": 60
       },
       "Prices": {
-        "Buy-in price": [
-          4.0,
-          4.0,
-          4.0,
-          4.0,
-          4.0,
-          4.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          2.0,
-          4.0,
-          4.0,
-          4.0,
-          4.0,
-          4.0,
-          4.0
-        ],
-        "Sell-out price": [
-          12.0,
-          12.0,
-          12.0,
-          12.0,
-          12.0,
-          12.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          15.0,
-          12.0,
-          12.0,
-          12.0,
-          12.0,
-          12.0,
-          12.0
-        ]
+        "Buy-in price": 2.0,
+        "Sell-out price": 15.0
       }
     },
     "Agents": {
       "Bob": {
         "Bus": "b2",
         "Role": "Prosumer",
-        "Trader": "RL trader",
+        "Trader": "PPO trader",
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,
@@ -79,7 +29,7 @@
       "Chris": {
         "Bus": "b3",
         "Role": "Prosumer",
-        "Trader": "RL trader",
+        "Trader": "PPO trader",
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,
@@ -88,27 +38,27 @@
       "David": {
         "Bus": "b4",
         "Role": "Consumer",
-        "Trader": "RL trader"
+        "Trader": "PPO trader"
       },
       "Evan": {
         "Bus": "b5",
         "Role": "Consumer",
-        "Trader": "RL trader"
+        "Trader": "PPO trader"
       },
       "Frank": {
         "Bus": "b6",
         "Role": "Consumer",
-        "Trader": "RL trader"
+        "Trader": "PPO trader"
       },
       "Gary": {
         "Bus": "b7",
         "Role": "Consumer",
-        "Trader": "RL trader"
+        "Trader": "PPO trader"
       },
       "Henry": {
         "Bus": "b8",
         "Role": "Prosumer",
-        "Trader": "RL trader",
+        "Trader": "PPO trader",
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,
@@ -117,7 +67,7 @@
       "Iris": {
         "Bus": "b9",
         "Role": "Prosumer",
-        "Trader": "RL trader",
+        "Trader": "PPO trader",
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,

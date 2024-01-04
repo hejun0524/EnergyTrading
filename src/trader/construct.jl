@@ -3,8 +3,10 @@ function _construct_trader(
     market::Market,
     grid::Grid,
 )::Trader
-    if trader_type == "RL trader"
-        return _construct_RL_trader(market, grid)
+    if trader_type == "DDPG trader"
+        return _construct_DDPG_trader(market, grid)
+    elseif trader_type == "PPO trader"
+        return _construct_PPO_trader(market, grid)
     elseif trader_type == "ZIP trader"
         # return _construct_RL_trader(grid)
     end

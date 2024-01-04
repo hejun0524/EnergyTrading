@@ -37,15 +37,26 @@ function _time_dimension_adjust(
     sys_total_time::Int,
     max_steps::Int,
 )::Union{Vector{Int}, Vector{Float64}}
-    # repeat single
-    (arr_time_step % sys_time_step == 0) || error("System time step is not a divisor.")
-    repeat_single = arr_time_step ÷ sys_time_step
     # repeat all 
     extra_repeat = sys_total_time % arr_total_time == 0 ? 0 : 1
     repeat_all = sys_total_time ÷ arr_total_time + extra_repeat
-    # repeat and truncate
-    new_arr = [i for _ in 1:repeat_all for i in arr for _ in 1:repeat_single]
-    return new_arr[1:max_steps]
+    # check repeat single
+    if arr_time_step >= sys_time_step
+        (arr_time_step % sys_time_step == 0) || error("System time step is not a divisor.")
+        # repeat single
+        repeat_single = arr_time_step ÷ sys_time_step
+        # repeat and truncate
+        new_arr = [i for _ in 1:repeat_all for i in arr for _ in 1:repeat_single]
+        return new_arr[1:max_steps]
+    else 
+        (sys_time_step % arr_time_step == 0) || error("Data time step is not a divisor.")
+        # group size
+        group_size = sys_time_step ÷ arr_time_step
+        new_arr = [sum(arr[i:i+group_size-1]) for i = 1:group_size:length(arr)]
+        # sum and truncate
+        new_arr = [i for _ in 1:repeat_all for i in new_arr]
+        return new_arr[1:max_steps]
+    end
 end
 
 ```
@@ -157,14 +168,9 @@ function _read_shape_data(
     time_step = params["Time step (min)"]
     (total_time % time_step == 0) || error(
         "Shape file total time length is not divisible by the time step.")
-    (time_step % clock.time_step == 0) || error(
-        "Shape file time step is not divisible by the clock time step.")
     shape_data = zeros(total_time ÷ time_step)
     for (_, each_data) in dict["Data"]
         shape_data += each_data
-    end
-    if use_time_divisor
-        shape_data /= time_step ÷ clock.time_step
     end
 
     shape_data_corrected = _time_dimension_adjust(
@@ -175,6 +181,11 @@ function _read_shape_data(
         sys_total_time = clock.T,
         max_steps = clock.n_steps,
     )
+
+    if use_time_divisor
+        shape_data_corrected /= time_step / clock.time_step
+    end
+
     shape = Shape(
         shape_name,
         shape_data_corrected,

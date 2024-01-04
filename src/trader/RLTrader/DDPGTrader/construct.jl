@@ -1,34 +1,28 @@
-function _construct_RL_trader(
+function _construct_DDPG_trader(
     market::Market,
     grid::Grid;
-    buffer_size::Int = 100,
+    buffer_size::Int = 400,
     batch_size::Int = 20,
-)::RLTrader
+)::DDPGTrader
     n_actions, n_states = _cardinality(market)
-    return RLTrader(
+    return DDPGTrader(
         buying_limit_price = grid.sell_out_price,
         selling_limit_price = grid.buy_in_price,
         actor_network = _construct_neural_network(
-            "actor", n_states, n_actions, activation = "tanh"
+            "actor", n_states, n_actions, activation = "softmax"
         ),
         critic_network = _construct_neural_network(
             "critic", n_states + n_actions, 1
         ),
         target_actor_network = _construct_neural_network(
-            "target_actor", n_states, n_actions, activation = "tanh"
+            "target_actor", n_states, n_actions, activation = "softmax"
         ),
         target_critic_network = _construct_neural_network(
             "target_critic", n_states + n_actions, 1
         ),
-        buffer = _construct_replay_buffer(
+        buffer = _construct_DDPG_memory(
             buffer_size, n_states, n_actions
         ),
         batch_size = batch_size,
     )
-end
-
-function _cardinality(market::Market)::Tuple{Int, Int}
-    (market isa CDAMarket) && return (3, 41)
-    (market isa QuantityCDAMarket) && return (2, 33)
-    error("The market type is not defined.")
 end

@@ -1,12 +1,12 @@
 using Flux
 
 function _learn!(
-    trader::RLTrader,
+    trader::DDPGTrader,
 )
     # make sure sufficient samples are available
     trader.buffer.memory_counter >= trader.batch_size || return
     # sample from buffer 
-    states, next_states, actions, rewards, dones = sample_from_buffer(
+    states, next_states, actions, rewards, dones = _sample_from_buffer(
         trader.buffer, trader.batch_size)
     
     # get data for critic
