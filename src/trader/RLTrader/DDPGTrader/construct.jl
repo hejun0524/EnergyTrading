@@ -1,6 +1,7 @@
 function _construct_DDPG_trader(
     market::Market,
     grid::Grid;
+    reward_type::String = "conventional",
     buffer_size::Int = 400,
     batch_size::Int = 20,
 )::DDPGTrader
@@ -8,14 +9,15 @@ function _construct_DDPG_trader(
     return DDPGTrader(
         buying_limit_price = grid.sell_out_price,
         selling_limit_price = grid.buy_in_price,
+        reward_type = reward_type,
         actor_network = _construct_neural_network(
-            "actor", n_states, n_actions, activation = "softmax"
+            "actor", n_states, n_actions, activation = "tanh"
         ),
         critic_network = _construct_neural_network(
             "critic", n_states + n_actions, 1
         ),
         target_actor_network = _construct_neural_network(
-            "target_actor", n_states, n_actions, activation = "softmax"
+            "target_actor", n_states, n_actions, activation = "tanh"
         ),
         target_critic_network = _construct_neural_network(
             "target_critic", n_states + n_actions, 1

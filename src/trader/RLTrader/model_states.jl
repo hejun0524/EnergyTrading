@@ -1,13 +1,22 @@
 using Flux, DataStructures, JLD2
 
 function _get_trader_networks(
-    trader::RLTrader,
+    trader::DDPGTrader,
 )::Vector{Network}
     return [
         trader.actor_network,
         trader.critic_network,
         trader.target_actor_network,
         trader.target_critic_network,
+    ]
+end
+
+function _get_trader_networks(
+    trader::PPOTrader,
+)::Vector{Network}
+    return [
+        trader.actor_network,
+        trader.critic_network,
     ]
 end
 

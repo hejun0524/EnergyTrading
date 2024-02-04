@@ -1,4 +1,5 @@
 using Distributions
+using Random
 
 function _run_episode!(
     instance::SimulationInstance,
@@ -62,7 +63,7 @@ function _run_episode!(
             end
         else
             # agents are always in the market
-            selected_agents = [a for a in instance.agents]
+            selected_agents = Random.shuffle([a for a in instance.agents])
         end
 
         # generate agent decision 
@@ -78,11 +79,25 @@ function _run_episode!(
                 instance.network,
             )
             ## Note: if counter >= 1, DDPG should modify mem's next_state
-            ## Note: PPO should evaluate every few time stamps
-            if !evaluate && (instance.clock.time_counter % agent.trader.training_frequency == 0)
-                _learn!(agent.trader)
-                learning_counter += 1
+            if agent.trader isa DDPGTrader
+                if agent.trader.buffer.memory_counter >= 1
+                    _modify_memory_interface!(
+                        agent.trader.buffer,
+                        arguments = Dict(
+                            :next_state => curr_state,
+                        )
+                    )
+                    _learn!(agent.trader)
+                    learning_counter += 1
+                end
+            elseif agent.trader isa PPOTrader
+                # PPO should evaluate every few time stamps
+                if !evaluate && (instance.clock.time_counter % agent.trader.training_frequency == 0)
+                    _learn!(agent.trader)
+                    learning_counter += 1
+                end
             end
+            
             # generate new action
             new_order, action, extra = _generate_trader_order!(
                 agent,

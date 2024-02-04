@@ -23,15 +23,23 @@ function _learn!(
     returns = advantages + values
     # update the policy (Adam) & re-fit the value function (GD)
     cov_mat = diagm([0.5 for _ in 1:length(actions[1])])
-    for _ in 1:trader.epochs
+    for _ in 1:1#trader.epochs
         # calculate losses and optimize actor and critic
         actor_data = Flux.DataLoader((states, actions)) |> gpu
         for (idx, data) in enumerate(actor_data)
             s, a = data
             grads = Flux.gradient(trader.actor_network.model) do m
-                dist = MvNormal(m(s[1]), cov_mat)
-                new_prob = loglikelihood(dist, a[1])
-                ratio = exp(new_prob - probs[idx])
+                """
+                if length(s[1]) == 1
+                    dist = Normal(m(s[1]), 0.5)
+                    new_prob = loglikelihood(dist, a[1][1])
+                else 
+                    dist = MvNormal(m(s[1]), cov_mat)
+                    new_prob = loglikelihood(dist, a[1])
+                end
+                """
+                new_prob = m(s[1])[1]
+                ratio = new_prob / probs[idx]
                 clipped_ratio = clamp(ratio, 1 - trader.ε, 1 + trader.ε)
                 Flux.mean(-advantages[idx] * min(ratio, clipped_ratio))
             end

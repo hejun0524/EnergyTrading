@@ -115,7 +115,20 @@ function _generate_trader_order!(
         time_counter_submit = clock.time_counter,
         time_counter_expire = time_counter_expire,
     )
-    return new_order, actions, Dict(
-        :reward => ConventionalReward()
-    )
+
+    # initialize reward
+    if trader.reward_type == "conventional"
+        reward = ConventionalReward(quantity = abs(q))
+    elseif trader.reward_type == "normalized"
+        reward = NormalizedReward(
+            price_ub = q > 0 ? 15.0 : 2.0,
+            price_lb = q > 0 ? 2.0 : 15.0,
+            quantity = abs(q),
+        )
+    else
+        error("Trader's reward type is not defined.")
+    end
+
+    # return order, actions and extra info
+    return new_order, actions, Dict(:reward => reward)
 end

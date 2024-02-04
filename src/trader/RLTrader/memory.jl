@@ -33,7 +33,7 @@ function _modify_memory_interface!(
     if buffer isa DDPGMemory
         _modify_memory!(
             buffer,
-            arguments[:target_memory_counter],
+            buffer.memory_counter,
             state = get(arguments, :state, nothing),
             action = get(arguments, :action, nothing),
             reward = get(arguments, :reward, nothing),

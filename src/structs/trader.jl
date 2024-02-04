@@ -17,6 +17,7 @@ Base.@kwdef mutable struct DDPGTrader <: RLTrader
     selling_limit_price::Vector{Float64}
     current_price::Float64 = 0.0
     price_history::Vector{Float64} = Float64[]
+    reward_type::String = "conventional"
     # define the 4 network + buffer
     actor_network = nothing
     critic_network = nothing
@@ -37,6 +38,7 @@ Base.@kwdef mutable struct PPOTrader <: RLTrader
     selling_limit_price::Vector{Float64}
     current_price::Float64 = 0.0
     price_history::Vector{Float64} = Float64[]
+    reward_type::String = "conventional"
     # define the 2 network + buffer
     actor_network = nothing
     critic_network = nothing

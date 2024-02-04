@@ -22,6 +22,16 @@ function _construct_neural_network(
             Dense(64 => out_dim, relu),
             softmax
         ) |> gpu 
+    elseif activation == "sigmoid"
+        model = Chain(
+            Dense(in_dim => out_dim, σ)
+        ) |> gpu 
+    elseif activation == "tanh"
+        model = Chain(
+            Dense(in_dim => 64, relu), 
+            LSTM(64 => 64), 
+            Dense(64 => out_dim, tanh)
+        ) |> gpu 
     else
         model = Chain(
             Dense(in_dim => 64, relu), 
@@ -29,7 +39,7 @@ function _construct_neural_network(
             Dense(64 => out_dim),
         ) |> gpu 
     end
-    opt_state = Flux.setup(Adam(), model)
+    opt_state = Flux.setup(Adam(0.0001), model)
 
     return Network(name, model, opt_state)
 end

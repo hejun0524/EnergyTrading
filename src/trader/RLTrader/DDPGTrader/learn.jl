@@ -8,6 +8,7 @@ function _learn!(
     # sample from buffer 
     states, next_states, actions, rewards, dones = _sample_from_buffer(
         trader.buffer, trader.batch_size)
+    rewards =  _get_reward_value.(rewards)
     
     # get data for critic
     critic_inputs = [] # array of arrays

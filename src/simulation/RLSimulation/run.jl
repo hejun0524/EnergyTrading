@@ -15,6 +15,7 @@ function simulate!(
     else
         for episode in 1:method.episodes
             @info "Training episode $(episode)/$(method.episodes)"
+            println("Training episode $(episode)/$(method.episodes)")
             time_episode = @elapsed begin
                 _run_episode!(instance, method.evaluate)
             end

@@ -31,8 +31,8 @@ function solution(instance::SimulationInstance)::OrderedDict
     sol["Agent revenue history"] = OrderedDict(
         agent.name => OrderedDict(
             "Bus" => agent.bus.name,
-            "Total spending" => sum([snap.spending for snap in agent.trading_history]),
-            "Log" => _retrieve_log(agent)
+            # "Total spending" => sum([snap.spending for snap in agent.trading_history]),
+            # "Log" => _retrieve_log(agent)
         ) for agent in instance.agents
     )
 

@@ -1,5 +1,12 @@
 function _finalize_reward!(r::ConventionalReward)
-    r.reward = r.raw_reward
+    direction = 0.0
+    if r.order_type == "bid"
+        direction = -1.0
+    elseif r.order_type == "ask"
+        direction = 1.0 
+    end
+    difference = r.raw_reward - r.price_baseline * r.quantity
+    r.reward = difference * direction
 end
 
 function _finalize_reward!(r::NormalizedReward)
