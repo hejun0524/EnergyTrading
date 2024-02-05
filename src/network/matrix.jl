@@ -54,7 +54,7 @@ function _admittance_matrix(;
         Y[j, i] = Y[i, j]
     end
 
-    for n = 1:n_buses 
+    for n = 1:n_buses
         for k = 1:n_lines
             l = lines[k]
             i, j = l.source.index, l.target.index
@@ -67,8 +67,6 @@ function _admittance_matrix(;
     return Y
 end
 
-function _conductance_matrix(
-    Y::Matrix
-)::Matrix{Union{Float64, Int}}
+function _conductance_matrix(Y::Matrix)::Matrix{Union{Float64,Int}}
     return real(Y)
 end

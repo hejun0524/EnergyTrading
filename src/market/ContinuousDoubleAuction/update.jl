@@ -1,10 +1,10 @@
 function _update_market_history!(
     market::CDAMarket,
     clock::Clock;
-    deals::Vector{Deal} = Deal[]
+    deals::Vector{Deal} = Deal[],
 )
     n_deals = length(deals)
-    n_deals > 0 || return 
+    n_deals > 0 || return
     prices = [d.price for d in deals]
     quantities = [d.quantity for d in deals]
     total_profit = prices' * quantities

@@ -1,21 +1,20 @@
 using Flux
 
-function _learn!(
-    trader::DDPGTrader,
-)
+function _learn!(trader::DDPGTrader)
     # make sure sufficient samples are available
     trader.buffer.memory_counter >= trader.batch_size || return
     # sample from buffer 
-    states, next_states, actions, rewards, dones = _sample_from_buffer(
-        trader.buffer, trader.batch_size)
-    rewards =  _get_reward_value.(rewards)
-    
+    states, next_states, actions, rewards, dones =
+        _sample_from_buffer(trader.buffer, trader.batch_size)
+    rewards = _get_reward_value.(rewards)
+
     # get data for critic
     critic_inputs = [] # array of arrays
     critic_labels = []
     for i = 1:trader.batch_size
         target_actions = trader.target_actor_network.model(next_states[i])
-        next_critic_value = trader.target_critic_network.model([next_states[i]; target_actions])
+        next_critic_value =
+            trader.target_critic_network.model([next_states[i]; target_actions])
         target = rewards[i] + trader.γ * (1 - dones[i]) * sum(next_critic_value)
         push!(critic_inputs, [states[i]; actions[i]])
         push!(critic_labels, target)
@@ -31,11 +30,7 @@ function _learn!(
             result = m(input[1])
             Flux.mse(result, label)
         end
-        Flux.update!(
-            trader.critic_network.opt_state, 
-            trader.critic_network.model, 
-            grads[1]
-        )
+        Flux.update!(trader.critic_network.opt_state, trader.critic_network.model, grads[1])
     end
 
     # get data for actor
@@ -44,8 +39,8 @@ function _learn!(
         push!(actor_inputs, states[i])
     end
     # optimize actor
-    actor_loss(x) = sum(Flux.mean(
-        -trader.critic_network.model(x..., trader.actor_network.model(x...))))
+    actor_loss(x) =
+        sum(Flux.mean(-trader.critic_network.model(x..., trader.actor_network.model(x...))))
     actor_data = Flux.DataLoader(actor_inputs) |> gpu
     # actor_ps = Flux.params(trader.actor_network.model)
     # Flux.train!(actor_loss, actor_ps, actor_data, trader.actor_network.opt_state)
@@ -54,11 +49,7 @@ function _learn!(
             result = m(input[1])
             Flux.mean(-trader.critic_network.model([input[1]; result]))
         end
-        Flux.update!(
-            trader.actor_network.opt_state, 
-            trader.actor_network.model, 
-            grads[1]
-        )
+        Flux.update!(trader.actor_network.opt_state, trader.actor_network.model, grads[1])
     end
 
     # update target network parameters

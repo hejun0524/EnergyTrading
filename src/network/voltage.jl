@@ -1,6 +1,6 @@
 function _validate_voltage_change(
     network::NetworkInstance,
-    ΔP::Union{Float64, Int},
+    ΔP::Union{Float64,Int},
     vsc::Vector{Complex},
 )::Bool
     # target bus get power, get all buses' dv/dP
@@ -17,19 +17,15 @@ end
 
 function _compute_voltage_changes(
     network::NetworkInstance,
-    ΔP::Union{Float64, Int},
+    ΔP::Union{Float64,Int},
     vsc::Vector{Complex},
 )::Vector{Float64}
     v = [_polar_to_complex(bus.v_mag, bus.v_ang) for bus in network.buses]
-    Δv = [ΔP / abs(v[i]) * real(conj(v[i]) * vsc[i]) 
-        for i = 1:length(network.buses)]
+    Δv = [ΔP / abs(v[i]) * real(conj(v[i]) * vsc[i]) for i = 1:length(network.buses)]
     return Δv
 end
 
-function _compute_vsc(
-    network::NetworkInstance,
-    target_bus::Bus,
-)::Vector{Complex}
+function _compute_vsc(network::NetworkInstance, target_bus::Bus)::Vector{Complex}
     target_bus.index != 1 || error("Slack bus does not have partial derivatives.")
     n = length(network.buses)
     M = zeros(Complex, n, n)
@@ -37,7 +33,7 @@ function _compute_vsc(
     v = [_polar_to_complex(bus.v_mag, bus.v_ang) for bus in network.buses]
     vstar = conj(v)
 
-    for i = 1:n 
+    for i = 1:n
         # update non-slack entries on M
         M[i, :] = [0 (vstar[i] * network.Y[i, 2:end])']
         # update entries on N
@@ -45,7 +41,7 @@ function _compute_vsc(
     end
 
     # solve the linear complex system 
-    A = [ M N; conj(N) conj(M) ]
+    A = [M N; conj(N) conj(M)]
     b = zeros(n)
     b[target_bus.index] = 1
     b = [b; b]

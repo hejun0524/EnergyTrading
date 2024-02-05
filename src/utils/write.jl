@@ -1,4 +1,4 @@
-using JSON 
+using JSON
 
 function write(filename::AbstractString, solution::AbstractDict)::Nothing
     @info "Writing solution to $(filename)..."

@@ -11,20 +11,24 @@ function _construct_DDPG_trader(
         selling_limit_price = grid.buy_in_price,
         reward_type = reward_type,
         actor_network = _construct_neural_network(
-            "actor", n_states, n_actions, activation = "tanh"
+            "actor",
+            n_states,
+            n_actions,
+            activation = "tanh",
         ),
-        critic_network = _construct_neural_network(
-            "critic", n_states + n_actions, 1
-        ),
+        critic_network = _construct_neural_network("critic", n_states + n_actions, 1),
         target_actor_network = _construct_neural_network(
-            "target_actor", n_states, n_actions, activation = "tanh"
+            "target_actor",
+            n_states,
+            n_actions,
+            activation = "tanh",
         ),
         target_critic_network = _construct_neural_network(
-            "target_critic", n_states + n_actions, 1
+            "target_critic",
+            n_states + n_actions,
+            1,
         ),
-        buffer = _construct_DDPG_memory(
-            buffer_size, n_states, n_actions
-        ),
+        buffer = _construct_DDPG_memory(buffer_size, n_states, n_actions),
         batch_size = batch_size,
     )
 end

@@ -1,8 +1,6 @@
 using Flux, DataStructures, JLD2
 
-function _get_trader_networks(
-    trader::DDPGTrader,
-)::Vector{Network}
+function _get_trader_networks(trader::DDPGTrader)::Vector{Network}
     return [
         trader.actor_network,
         trader.critic_network,
@@ -11,20 +9,12 @@ function _get_trader_networks(
     ]
 end
 
-function _get_trader_networks(
-    trader::PPOTrader,
-)::Vector{Network}
-    return [
-        trader.actor_network,
-        trader.critic_network,
-    ]
+function _get_trader_networks(trader::PPOTrader)::Vector{Network}
+    return [trader.actor_network, trader.critic_network]
 end
 
 # load models 
-function load_models!(
-    instance::SimulationInstance;
-    filename::String
-)
+function load_models!(instance::SimulationInstance; filename::String)
     if !ispath(filename)
         @warn "Cannot find $(filename). Model loading skipped."
         return
@@ -41,10 +31,7 @@ function load_models!(
 end
 
 # save models 
-function save_models(
-    instance::SimulationInstance;
-    filename::String,
-)
+function save_models(instance::SimulationInstance; filename::String)
     model_states = OrderedDict()
     for agent in instance.agents
         agent_key = "Agent_$(agent.index)"

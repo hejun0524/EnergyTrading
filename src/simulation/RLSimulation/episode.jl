@@ -1,10 +1,7 @@
 using Distributions
 using Random
 
-function _run_episode!(
-    instance::SimulationInstance,
-    evaluate::Bool,
-)
+function _run_episode!(instance::SimulationInstance, evaluate::Bool)
     # initiate arrival time 
     arrival_time = 0.0
     # reset clock and market
@@ -22,16 +19,17 @@ function _run_episode!(
 
         # market remove old orders, some agents receive reward
         expired_transactions = _remove_expired_orders!(
-            instance.market, instance.grid, instance.network, instance.clock)
+            instance.market,
+            instance.grid,
+            instance.network,
+            instance.clock,
+        )
 
         for rejection in expired_transactions
             agent = rejection.last_shout.agent
             _modify_memory_interface!(
                 agent.trader.buffer,
-                arguments = Dict(
-                    :reward => rejection.reward,
-                    :done => done,
-                )
+                arguments = Dict(:reward => rejection.reward, :done => done),
             )
             _finalize_reward!(agent.trader.buffer.reward_memory[end])
         end
@@ -39,12 +37,13 @@ function _run_episode!(
         # select agents
         selected_agents = []
         if instance.market.arrival !== nothing
-            while _get_time_counter_from_continuous_time(
-                    instance.clock, arrival_time) < instance.clock.time_counter
+            while _get_time_counter_from_continuous_time(instance.clock, arrival_time) <
+                  instance.clock.time_counter
                 # get next sample
                 arrival_time += rand(instance.market.arrival)
                 # choose an agent
-                selected_agent = _random_enter_market(instance.agents, instance.clock.time_counter)
+                selected_agent =
+                    _random_enter_market(instance.agents, instance.clock.time_counter)
                 selected_agent === nothing || push!(selected_agents, selected_agent)
             end
             # all agents non-selected prosume, no learning
@@ -68,14 +67,14 @@ function _run_episode!(
 
         # generate agent decision 
         new_orders = Order[]
-        for agent in selected_agents 
+        for agent in selected_agents
             curr_state = _get_observations!(
-                agent, 
-                instance.market, 
-                instance.clock, 
+                agent,
+                instance.market,
+                instance.clock,
                 instance.demand,
                 instance.supply,
-                instance.grid, 
+                instance.grid,
                 instance.network,
             )
             ## Note: if counter >= 1, DDPG should modify mem's next_state
@@ -83,21 +82,20 @@ function _run_episode!(
                 if agent.trader.buffer.memory_counter >= 1
                     _modify_memory_interface!(
                         agent.trader.buffer,
-                        arguments = Dict(
-                            :next_state => curr_state,
-                        )
+                        arguments = Dict(:next_state => curr_state),
                     )
                     _learn!(agent.trader)
                     learning_counter += 1
                 end
             elseif agent.trader isa PPOTrader
                 # PPO should evaluate every few time stamps
-                if !evaluate && (instance.clock.time_counter % agent.trader.training_frequency == 0)
+                if !evaluate &&
+                   (instance.clock.time_counter % agent.trader.training_frequency == 0)
                     _learn!(agent.trader)
                     learning_counter += 1
                 end
             end
-            
+
             # generate new action
             new_order, action, extra = _generate_trader_order!(
                 agent,
@@ -114,7 +112,7 @@ function _run_episode!(
                     :state => curr_state,
                     :action => action,
                     :done => done,
-                    extra...
+                    extra...,
                 ),
             )
         end
@@ -126,8 +124,12 @@ function _run_episode!(
         deals = Deal[]
         while true
             transaction = _match_and_process_orders!(
-                instance.market, instance.network, instance.grid, instance.clock)
-            
+                instance.market,
+                instance.network,
+                instance.grid,
+                instance.clock,
+            )
+
             # logging
             push!(instance.market.clearing_history, transaction)
 
@@ -135,18 +137,15 @@ function _run_episode!(
             if !(transaction isa Deal)
                 _remove_skip_flags!(instance.market)
                 break
-            else 
+            else
                 push!(deals, transaction)
                 for (agent, cleared) in [
-                    (transaction.from_agent, transaction.from_agent_cleared), 
-                    (transaction.to_agent, transaction.to_agent_cleared), 
+                    (transaction.from_agent, transaction.from_agent_cleared),
+                    (transaction.to_agent, transaction.to_agent_cleared),
                 ]
                     _modify_memory_interface!(
                         agent.trader.buffer,
-                        arguments = Dict(
-                            :reward => transaction.reward,
-                            :done => done,
-                        )
+                        arguments = Dict(:reward => transaction.reward, :done => done),
                     )
                     if cleared
                         _finalize_reward!(agent.trader.buffer.reward_memory[end])
@@ -164,7 +163,7 @@ function _run_episode!(
         end
 
         # finally snapshot all traders' current price & storage
-        for agent in instance.agents    
+        for agent in instance.agents
             _append_current_trader_price!(agent.trader)
         end
     end

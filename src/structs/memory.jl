@@ -1,7 +1,7 @@
 abstract type ReplayBuffer end
 
 Base.@kwdef mutable struct DDPGMemory <: ReplayBuffer
-    max_memory_size::Int 
+    max_memory_size::Int
     n_states::Int
     n_actions::Int
     memory_counter::Int

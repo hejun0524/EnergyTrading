@@ -1,15 +1,15 @@
 function _add_snapshot_to_history!(
     agent::Agent;
-    target::Union{Grid, Agent},
+    target::Union{Grid,Agent},
     action::String,
     clock::Clock,
     price::Float64,
     quantity::Float64,
     loss_charge::Float64 = 0.0,
     utilization_charge::Float64 = 0.0,
-    blocked::Bool = false
-)   
-    λ = action === "buy" ? 1 : -1 
+    blocked::Bool = false,
+)
+    λ = action === "buy" ? 1 : -1
     extra_charge = (loss_charge + utilization_charge) / 2
     spending = blocked ? 0 : (λ * price * quantity + extra_charge)
     snapshot = TradingSnapshot(
@@ -26,10 +26,7 @@ function _add_snapshot_to_history!(
     push!(agent.trading_history, snapshot)
 end
 
-function _add_deal_snapshot_to_agents!(
-    deal::Deal,
-    clock::Clock,
-)
+function _add_deal_snapshot_to_agents!(deal::Deal, clock::Clock)
     _add_snapshot_to_history!(
         deal.from_agent,
         target = deal.to_agent,

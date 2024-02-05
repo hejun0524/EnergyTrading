@@ -1,4 +1,4 @@
-using Distributions 
+using Distributions
 
 function _generate_trader_order!(
     agent::Agent,
@@ -6,7 +6,7 @@ function _generate_trader_order!(
     trader::DDPGTrader,
     clock::Clock,
     states::Vector{Float64},
-)::Tuple{Order, Vector{Float64}, Dict}
+)::Tuple{Order,Vector{Float64},Dict}
     actions = trader.actor_network.model(states)
     # add some noise to the actions
     actions += rand(Normal(0, 0.1), length(actions))
@@ -26,7 +26,9 @@ function _generate_trader_order!(
     dt = time_counter_expire - clock.time_counter
 
     # get q, p 
-    min_q = - sum(states[DEMAND_FORECAST:DEMAND_FORECAST+dt]) - (states[STORAGE_SIZE] - states[STORAGE_STATUS])
+    min_q =
+        -sum(states[DEMAND_FORECAST:DEMAND_FORECAST+dt]) -
+        (states[STORAGE_SIZE] - states[STORAGE_STATUS])
     max_q = states[STORAGE_STATUS] - sum(states[DEMAND_FORECAST:DEMAND_FORECAST+dt])
     q = min_q + (max_q - min_q) * actions[Q]
     max_p = trader.buying_limit_price[clock.time_counter]
@@ -43,7 +45,7 @@ function _generate_trader_order!(
     new_order = Order(
         agent = agent,
         trader = trader,
-        order_type = q > 0 ? "ask" : "bid", 
+        order_type = q > 0 ? "ask" : "bid",
         price = p,
         quantity = abs(q),
         time_counter_submit = clock.time_counter,
@@ -51,9 +53,7 @@ function _generate_trader_order!(
     )
     # update the current price
     trader.current_price = p
-    return new_order, actions, Dict(
-        :reward => ConventionalReward()
-    )
+    return new_order, actions, Dict(:reward => ConventionalReward())
 end
 
 function _generate_trader_order!(
@@ -62,7 +62,7 @@ function _generate_trader_order!(
     trader::DDPGTrader,
     clock::Clock,
     states::Vector{Float64},
-)::Tuple{Order, Vector{Float64}, Dict}
+)::Tuple{Order,Vector{Float64},Dict}
     actions = trader.actor_network.model(states)
     # add some noise to the actions
     actions += rand(Normal(0, 0.1), length(actions))
@@ -87,12 +87,12 @@ function _generate_trader_order!(
     storage_to_go = states[STORAGE_SIZE] - states[STORAGE_STATUS]
 
     # get q, p 
-    min_q = - demand_forecast
+    min_q = -demand_forecast
     max_q = 0
-    if agent isa Prosumer 
+    if agent isa Prosumer
         min_q -= storage_to_go
         max_q = storage_status - demand_forecast
-    elseif agent isa Producer 
+    elseif agent isa Producer
         min_q = 0
         max_q = storage_status
     end
@@ -109,8 +109,8 @@ function _generate_trader_order!(
     new_order = Order(
         agent = agent,
         trader = trader,
-        order_type = q > 0 ? "ask" : "bid", 
-        price = 0.0, 
+        order_type = q > 0 ? "ask" : "bid",
+        price = 0.0,
         quantity = abs(q),
         time_counter_submit = clock.time_counter,
         time_counter_expire = time_counter_expire,

@@ -19,7 +19,7 @@ end
 
 function _get_time_counter_from_continuous_time(
     clock::Clock,
-    continuous::Union{Int, Float64},
+    continuous::Union{Int,Float64},
 )::Int
     return Int(continuous ÷ clock.time_step)
 end

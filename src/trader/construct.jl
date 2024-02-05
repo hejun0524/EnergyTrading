@@ -1,8 +1,4 @@
-function _construct_trader(
-    trader_type::String,
-    market::Market,
-    grid::Grid,
-)::Trader
+function _construct_trader(trader_type::String, market::Market, grid::Grid)::Trader
     if trader_type == "DDPG trader"
         return _construct_DDPG_trader(market, grid)
     elseif trader_type == "PPO trader"

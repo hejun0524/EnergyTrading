@@ -1,9 +1,6 @@
 using Statistics
 
-function _reload_shape!(
-    shape::Shape,
-    clock::Clock,
-)
+function _reload_shape!(shape::Shape, clock::Clock)
     shape.total_time > clock.T || return
     # get total time in min of a simulation period
     period = clock.n_steps * clock.time_step

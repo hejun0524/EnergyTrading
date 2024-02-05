@@ -1,7 +1,4 @@
-function _compute_sdr_price(
-    market::QuantityCDAMarket,
-    clock::Clock,
-)::Float64
+function _compute_sdr_price(market::QuantityCDAMarket, clock::Clock)::Float64
     # unpack values
     r = market.current_ratio
     h = market.max_price[clock.time_counter]

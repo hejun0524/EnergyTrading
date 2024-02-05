@@ -2,7 +2,7 @@ function _validate_transaction_and_update_network!(
     transaction::Transaction,
     network::NetworkInstance,
     grid::Grid,
-    clock::Clock
+    clock::Clock,
 )
     (transaction isa Deal) || return
     # unpack values 

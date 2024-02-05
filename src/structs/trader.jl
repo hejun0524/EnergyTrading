@@ -1,5 +1,5 @@
 Base.@kwdef mutable struct ZIPTrader <: Trader
-    action_type::String 
+    action_type::String
     trader_group::Int
     limit_price::Vector{Float64}
     current_price::Float64
@@ -21,7 +21,7 @@ Base.@kwdef mutable struct DDPGTrader <: RLTrader
     # define the 4 network + buffer
     actor_network = nothing
     critic_network = nothing
-    target_actor_network = nothing 
+    target_actor_network = nothing
     target_critic_network = nothing
     buffer::DDPGMemory
     batch_size::Int = 50

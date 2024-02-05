@@ -5,8 +5,9 @@ function _grid_buy_from_agent!(
     network::NetworkInstance,
     clock::Clock,
 )::Float64
-    agent isa Producer || agent isa Prosumer || error(
-        "Grid can only buy from producers and prosumers.")
+    agent isa Producer ||
+        agent isa Prosumer ||
+        error("Grid can only buy from producers and prosumers.")
     # update grid
     grid.buy_in_quantity += quantity
     grid_cost = quantity * grid.buy_in_price[clock.time_counter]
@@ -28,14 +29,15 @@ function _grid_buy_from_agent!(
 end
 
 function _grid_sell_to_agent!(
-    grid::Grid, 
+    grid::Grid,
     agent::Agent,
     quantity::Float64,
     network::NetworkInstance,
     clock::Clock,
 )::Float64
-    agent isa Consumer || agent isa Prosumer || error(
-        "Grid can only sell to consumers and prosumers.")
+    agent isa Consumer ||
+        agent isa Prosumer ||
+        error("Grid can only sell to consumers and prosumers.")
     # update grid
     grid.sell_out_quantity += quantity
     grid_revenue = quantity * grid.sell_out_price[clock.time_counter]

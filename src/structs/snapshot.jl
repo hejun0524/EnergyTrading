@@ -1,5 +1,5 @@
 Base.@kwdef mutable struct TradingSnapshot <: Snapshot
-    target::Union{Grid, Agent}
+    target::Union{Grid,Agent}
     action::String
     time_counter::Int
     price::Float64

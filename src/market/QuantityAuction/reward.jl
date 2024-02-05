@@ -3,7 +3,7 @@ function _finalize_reward!(r::ConventionalReward)
     if r.order_type == "bid"
         direction = -1.0
     elseif r.order_type == "ask"
-        direction = 1.0 
+        direction = 1.0
     end
     difference = r.raw_reward - r.price_baseline * r.quantity
     r.reward = difference * direction
@@ -16,11 +16,7 @@ function _finalize_reward!(r::NormalizedReward)
     r.reward = clamp(rew, 0.0, 1.0)
 end
 
-function _accumulate_raw_reward!(
-    r::Reward,
-    val::Float64; 
-    replace::Bool = false,
-)
+function _accumulate_raw_reward!(r::Reward, val::Float64; replace::Bool = false)
     r.raw_reward = (replace ? 0.0 : r.discount * r.raw_reward) + val
 end
 

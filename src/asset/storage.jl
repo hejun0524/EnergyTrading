@@ -1,32 +1,20 @@
-function _freeze_storage!(
-    storage::Storage,
-    quantity::Float64
-)
+function _freeze_storage!(storage::Storage, quantity::Float64)
     real_quantity = quantity / storage.efficiency
     storage.frozen_quantity = real_quantity
 end
 
-function _sell_power_from_storage!(
-    storage::Storage,
-    quantity::Float64
-)
+function _sell_power_from_storage!(storage::Storage, quantity::Float64)
     real_quantity = quantity / storage.efficiency
     storage.frozen_quantity -= real_quantity
     storage.current_level -= real_quantity
 end
 
-function _return_storage_sell!(
-    storage::Storage,
-    quantity::Float64
-)
+function _return_storage_sell!(storage::Storage, quantity::Float64)
     real_quantity = quantity / storage.efficiency
     storage.current_level += real_quantity
 end
 
-function _update_storage!(
-    storage::Storage,
-    quantity::Float64
-)::Float64
+function _update_storage!(storage::Storage, quantity::Float64)::Float64
     storage.current_level += quantity
     # cannot go above cap
     if storage.current_level > storage.capacity

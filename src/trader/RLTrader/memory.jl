@@ -1,7 +1,4 @@
-function _store_memory_interface!(
-    buffer::ReplayBuffer;
-    arguments::Dict
-)
+function _store_memory_interface!(buffer::ReplayBuffer; arguments::Dict)
     if buffer isa DDPGMemory
         _store_new_memory!(
             buffer,
@@ -26,10 +23,7 @@ function _store_memory_interface!(
     end
 end
 
-function _modify_memory_interface!(
-    buffer::ReplayBuffer;
-    arguments::Dict
-)
+function _modify_memory_interface!(buffer::ReplayBuffer; arguments::Dict)
     if buffer isa DDPGMemory
         _modify_memory!(
             buffer,

@@ -11,39 +11,43 @@ function _remove_expired_orders!(
     filter!(o -> o.quantity >= tol, market.book_buy)
     filter!(o -> o.quantity >= tol, market.book_sell)
     # remove expired orders
-    expired_bids = [o for o in market.book_buy 
-        if o.time_counter_expire < current_time_counter]
-    expired_asks = [o for o in market.book_sell 
-        if o.time_counter_expire < current_time_counter]
+    expired_bids =
+        [o for o in market.book_buy if o.time_counter_expire < current_time_counter]
+    expired_asks =
+        [o for o in market.book_sell if o.time_counter_expire < current_time_counter]
     # mutate the books
-    filter!(o -> o.time_counter_expire >= current_time_counter, 
-        market.book_buy)
-    filter!(o -> o.time_counter_expire >= current_time_counter, 
-        market.book_sell)
+    filter!(o -> o.time_counter_expire >= current_time_counter, market.book_buy)
+    filter!(o -> o.time_counter_expire >= current_time_counter, market.book_sell)
     # reset agent in-market status
     for o in expired_bids
         o.agent.in_market = false
         (o.agent isa Prosumer) && (o.agent.in_market_as = "")
         # spending should be negative
         reward = -_grid_sell_to_agent!(grid, o.agent, o.quantity, network, clock)
-        push!(expired_transactions, Rejection(            
-            price = grid.sell_out_price[current_time_counter],
-            time_counter = current_time_counter,
-            last_shout = o,
-            reward = reward,
-        ))
+        push!(
+            expired_transactions,
+            Rejection(
+                price = grid.sell_out_price[current_time_counter],
+                time_counter = current_time_counter,
+                last_shout = o,
+                reward = reward,
+            ),
+        )
     end
     for o in expired_asks
         o.agent.in_market = false
         (o.agent isa Prosumer) && (o.agent.in_market_as = "")
         # earning should be positive
         reward = _grid_buy_from_agent!(grid, o.agent, o.quantity, network, clock)
-        push!(expired_transactions, Rejection(
-            price = grid.buy_in_price[current_time_counter],
-            time_counter = current_time_counter,
-            last_shout = o,
-            reward = reward,
-        ))
+        push!(
+            expired_transactions,
+            Rejection(
+                price = grid.buy_in_price[current_time_counter],
+                time_counter = current_time_counter,
+                last_shout = o,
+                reward = reward,
+            ),
+        )
     end
     return expired_transactions
 end

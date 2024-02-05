@@ -1,4 +1,4 @@
-module EnergyTrading 
+module EnergyTrading
 
 # include all the data structs
 include("structs/abstract.jl")
@@ -24,6 +24,7 @@ include("utils/logging.jl")
 include("utils/randomize.jl")
 include("utils/solution.jl")
 include("utils/write.jl")
+include("utils/format.jl")
 
 # include all function files 
 include("environment/clock.jl")

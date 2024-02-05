@@ -1,6 +1,6 @@
 Base.@kwdef mutable struct Consumer <: Agent
     index::Int
-    name::String 
+    name::String
     bus::Bus
     trader::Trader
     next_free_time::Int = 1
@@ -10,7 +10,7 @@ end
 
 Base.@kwdef mutable struct Producer <: Agent
     index::Int
-    name::String 
+    name::String
     bus::Bus
     trader::Trader
     next_free_time::Int = 1
@@ -22,7 +22,7 @@ end
 
 Base.@kwdef mutable struct Prosumer <: Agent
     index::Int
-    name::String 
+    name::String
     bus::Bus
     trader::Trader
     next_free_time::Int = 1

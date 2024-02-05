@@ -2,7 +2,7 @@
 function _construct_DDPG_memory(
     max_memory_size::Int,
     n_states::Int,
-    n_actions::Int
+    n_actions::Int,
 )::DDPGMemory
     return DDPGMemory(
         max_memory_size = max_memory_size,
@@ -12,10 +12,7 @@ function _construct_DDPG_memory(
     )
 end
 
-function _get_memory_index(
-    target_counter::Int, 
-    max_size::Int, 
-)::Int 
+function _get_memory_index(target_counter::Int, max_size::Int)::Int
     idx = target_counter % max_size
     if idx == 0 && target_counter > 0
         return max_size
@@ -33,7 +30,7 @@ function _store_new_memory!(
     done::Bool = false,
 )
     # increase the counter by 1
-    buffer.memory_counter += 1   
+    buffer.memory_counter += 1
     # store the memory 
     if buffer.memory_counter <= buffer.max_memory_size
         push!(buffer.state_memory, state)
@@ -42,58 +39,48 @@ function _store_new_memory!(
         push!(buffer.next_state_memory, next_state)
         push!(buffer.terminal_memory, done)
     else
-        idx = _get_memory_index(
-            buffer.memory_counter, 
-            buffer.max_memory_size
-        )
-        buffer.state_memory[idx] = state 
+        idx = _get_memory_index(buffer.memory_counter, buffer.max_memory_size)
+        buffer.state_memory[idx] = state
         buffer.action_memory[idx] = action
         buffer.reward_memory[idx] = reward
         buffer.next_state_memory[idx] = next_state
         buffer.terminal_memory[idx] = done
-    end 
+    end
 end
 
 # modify memory in replay buffer 
 function _modify_memory!(
     buffer::DDPGMemory,
     target_memory_counter::Int;
-    state::Union{Vector{Float64}, Nothing} = nothing,
-    action::Union{Vector{Float64}, Nothing} = nothing,
-    reward::Union{Float64, Nothing} = nothing,
+    state::Union{Vector{Float64},Nothing} = nothing,
+    action::Union{Vector{Float64},Nothing} = nothing,
+    reward::Union{Float64,Nothing} = nothing,
     reward_replace::Bool = false,
-    next_state::Union{Vector{Float64}, Nothing} = nothing,
-    done::Union{Bool, Nothing} = nothing,
+    next_state::Union{Vector{Float64},Nothing} = nothing,
+    done::Union{Bool,Nothing} = nothing,
 )
     # get the buffer index 
     idx = _get_memory_index(target_memory_counter, buffer.max_memory_size)
     # store the memory 
     if state !== nothing
-        buffer.state_memory[idx] = state 
+        buffer.state_memory[idx] = state
     end
     if action !== nothing
         buffer.action_memory[idx] = action
     end
     if reward !== nothing
-        _accumulate_raw_reward!(
-            buffer.reward_memory[idx],
-            reward,
-            replace = reward_replace,
-        )
+        _accumulate_raw_reward!(buffer.reward_memory[idx], reward, replace = reward_replace)
     end
-    if next_state !== nothing 
+    if next_state !== nothing
         buffer.next_state_memory[idx] = next_state
     end
-    if done !== nothing 
+    if done !== nothing
         buffer.terminal_memory[idx] = done
     end
 end
 
 # sample the memory buffer
-function _sample_from_buffer(
-    buffer::DDPGMemory,
-    batch_size::Int,
-)
+function _sample_from_buffer(buffer::DDPGMemory, batch_size::Int)
     # do not sample initialized 
     max_sample_size = min(buffer.memory_counter, buffer.max_memory_size)
     batch = rand(1:max_sample_size, batch_size)

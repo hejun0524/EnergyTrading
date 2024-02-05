@@ -1,9 +1,6 @@
-using Random 
+using Random
 
-function simulate!(
-    instance::SimulationInstance,
-    method::RLSimulation,
-)
+function simulate!(instance::SimulationInstance, method::RLSimulation)
     Random.seed!(method.random_seed)
     @info "Running RL simulation instance..."
     if method.evaluate
@@ -13,7 +10,7 @@ function simulate!(
         end
         @info "Evaluation done in $(round(time_eval, digits=2))s"
     else
-        for episode in 1:method.episodes
+        for episode = 1:method.episodes
             @info "Training episode $(episode)/$(method.episodes)"
             println("Training episode $(episode)/$(method.episodes)")
             time_episode = @elapsed begin

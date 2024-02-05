@@ -9,26 +9,18 @@ function _update_network!(
         _update_bus_voltage!(bus, vsc[bus.index], ΔP)
     end
     # change line flows if valid
-    for line in network.lines 
+    for line in network.lines
         _update_line_flow!(line, ptdf[line.index], ΔP)
     end
 end
 
-function _update_bus_voltage!(
-    bus::Bus,
-    ∂v::Complex,
-    ΔP::Float64,
-)
+function _update_bus_voltage!(bus::Bus, ∂v::Complex, ΔP::Float64)
     Δv_mag, Δθ = _complex_to_polar(ΔP * ∂v)
     bus.v_mag += Δv_mag
     bus.v_ang += Δθ
 end
 
-function _update_line_flow!(
-    line::TransmissionLine,
-    ptdf::Float64,
-    ΔP::Float64,
-)
+function _update_line_flow!(line::TransmissionLine, ptdf::Float64, ΔP::Float64)
     Δflow = ptdf * ΔP
     line.current_flow += Δflow
 end

@@ -1,8 +1,6 @@
 using Flux, Distributions, LinearAlgebra
 
-function _learn!(
-    trader::PPOTrader,
-)
+function _learn!(trader::PPOTrader)
     states = trader.buffer.state_memory
     actions = trader.buffer.action_memory
     probs = trader.buffer.probability_memory
@@ -22,8 +20,8 @@ function _learn!(
     end
     returns = advantages + values
     # update the policy (Adam) & re-fit the value function (GD)
-    cov_mat = diagm([0.5 for _ in 1:length(actions[1])])
-    for _ in 1:1#trader.epochs
+    cov_mat = diagm([0.5 for _ = 1:length(actions[1])])
+    for _ = 1:1#trader.epochs
         # calculate losses and optimize actor and critic
         actor_data = Flux.DataLoader((states, actions)) |> gpu
         for (idx, data) in enumerate(actor_data)
@@ -44,9 +42,9 @@ function _learn!(
                 Flux.mean(-advantages[idx] * min(ratio, clipped_ratio))
             end
             Flux.update!(
-                trader.actor_network.opt_state, 
-                trader.actor_network.model, 
-                grads[1]
+                trader.actor_network.opt_state,
+                trader.actor_network.model,
+                grads[1],
             )
         end
 
@@ -58,12 +56,12 @@ function _learn!(
                 Flux.mse(result, label)
             end
             Flux.update!(
-                trader.critic_network.opt_state, 
-                trader.critic_network.model, 
-                grads[1]
+                trader.critic_network.opt_state,
+                trader.critic_network.model,
+                grads[1],
             )
         end
-    
+
     end
     # clear the memory buffer
     _clear_buffer!(trader.buffer)
