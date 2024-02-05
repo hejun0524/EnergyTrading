@@ -9,7 +9,8 @@ function read(path::String)::SimulationInstance
     json = JSON.parse(file, dicttype = () -> DefaultOrderedDict(nothing))
     clock = _read_parameters(json["Parameters"], json["Time groups"])
     demand_shape = _read_shape_data(json["Demands"], clock, "demand")
-    supply_shape = _read_shape_data(json["Supplies"], clock, "supply", use_time_divisor = false)
+    supply_shape =
+        _read_shape_data(json["Supplies"], clock, "supply", use_time_divisor = false)
     network = _read_network_instance(json["Buses"], json["Transmission lines"])
     grid = _read_grid(json["Grid"], network, clock)
     market = _read_market(json["Market"], grid, clock)
@@ -23,7 +24,7 @@ function read(path::String)::SimulationInstance
         demand = demand_shape,
         supply = supply_shape,
         agents = agents,
-    )  
+    )
 end
 
 ```
@@ -36,7 +37,7 @@ function _time_dimension_adjust(
     arr_total_time::Int,
     sys_total_time::Int,
     max_steps::Int,
-)::Union{Vector{Int}, Vector{Float64}}
+)::Union{Vector{Int},Vector{Float64}}
     # repeat all 
     extra_repeat = sys_total_time % arr_total_time == 0 ? 0 : 1
     repeat_all = sys_total_time ÷ arr_total_time + extra_repeat
@@ -46,15 +47,15 @@ function _time_dimension_adjust(
         # repeat single
         repeat_single = arr_time_step ÷ sys_time_step
         # repeat and truncate
-        new_arr = [i for _ in 1:repeat_all for i in arr for _ in 1:repeat_single]
+        new_arr = [i for _ = 1:repeat_all for i in arr for _ = 1:repeat_single]
         return new_arr[1:max_steps]
-    else 
+    else
         (sys_time_step % arr_time_step == 0) || error("Data time step is not a divisor.")
         # group size
         group_size = sys_time_step ÷ arr_time_step
         new_arr = [sum(arr[i:i+group_size-1]) for i = 1:group_size:length(arr)]
         # sum and truncate
-        new_arr = [i for _ in 1:repeat_all for i in new_arr]
+        new_arr = [i for _ = 1:repeat_all for i in new_arr]
         return new_arr[1:max_steps]
     end
 end
@@ -62,19 +63,16 @@ end
 ```
 This function reads the parameters and initiates the clock
 ```
-function _read_parameters(
-    parameters::DefaultOrderedDict,
-    groups::DefaultOrderedDict
-)::Clock
+function _read_parameters(parameters::DefaultOrderedDict, groups::DefaultOrderedDict)::Clock
     total_time = parameters["Total time (d)"]
-    total_time = total_time * 24 * 60 
+    total_time = total_time * 24 * 60
     time_step = parameters["Time step (min)"]
     # construct clock
-    (total_time % time_step == 0) || error(
-        "The total time length is not divisible by the time step.")
+    (total_time % time_step == 0) ||
+        error("The total time length is not divisible by the time step.")
     time_one_day = 24 * 60
-    (time_one_day % time_step == 0) || error(
-        "The total time length of one day is not divisible by the time step.")
+    (time_one_day % time_step == 0) ||
+        error("The total time length of one day is not divisible by the time step.")
     n_steps = total_time ÷ time_step
     n_steps_one_day = time_one_day ÷ time_step
     # construct clock groups
@@ -83,14 +81,14 @@ function _read_parameters(
     group_total_time = group_params["Total time (h)"] * 60
     group_labels = groups["Labels"]
     group_label_notes = groups["Label notes"]
-    if group_labels === nothing 
-        group_labels = [1 for _ in 1:(group_total_time ÷ group_time_step)]
+    if group_labels === nothing
+        group_labels = [1 for _ = 1:(group_total_time÷group_time_step)]
     end
-    if group_label_notes === nothing 
+    if group_label_notes === nothing
         group_label_notes = Dict(1 => "One group")
-    else 
-        group_label_notes = Dict(parse(Int, index) => note 
-            for (index, note) in group_label_notes)
+    else
+        group_label_notes =
+            Dict(parse(Int, index) => note for (index, note) in group_label_notes)
     end
     time_groups = _time_dimension_adjust(
         group_labels,
@@ -103,8 +101,8 @@ function _read_parameters(
     if time_groups === nothing
         time_groups = ones(n_steps)
     end
-    (n_steps == length(time_groups)) || error(
-        "The total number of time groups do not match other information.")
+    (n_steps == length(time_groups)) ||
+        error("The total number of time groups do not match other information.")
     clock = Clock(
         T = total_time,
         time_step = time_step,
@@ -112,7 +110,7 @@ function _read_parameters(
         n_steps_one_day = n_steps_one_day,
         time_groups = time_groups,
         time_group_notes = group_label_notes,
-        n_groups = length(Set(time_groups))
+        n_groups = length(Set(time_groups)),
     )
     return clock
 end
@@ -120,16 +118,12 @@ end
 ```
 This function reads the grid settings
 ```
-function _read_grid(
-    dict::DefaultOrderedDict,
-    network:: NetworkInstance,
-    clock::Clock,
-)::Grid
+function _read_grid(dict::DefaultOrderedDict, network::NetworkInstance, clock::Clock)::Grid
     params = dict["Parameters"]
     total_time = params["Total time (h)"] * 60
     time_step = params["Time step (min)"]
-    (total_time % time_step == 0) || error(
-        "Shape file total time length is not divisible by the time step.")
+    (total_time % time_step == 0) ||
+        error("Shape file total time length is not divisible by the time step.")
     # read prices
     sell_out_price = _time_dimension_adjust(
         _time_series(dict["Prices"]["Sell-out price"], total_time ÷ time_step),
@@ -161,13 +155,13 @@ function _read_shape_data(
     dict::DefaultOrderedDict,
     clock::Clock,
     shape_name::String;
-    use_time_divisor::Bool = true
+    use_time_divisor::Bool = true,
 )::Shape
     params = dict["Parameters"]
     total_time = params["Total time (h)"] * 60
     time_step = params["Time step (min)"]
-    (total_time % time_step == 0) || error(
-        "Shape file total time length is not divisible by the time step.")
+    (total_time % time_step == 0) ||
+        error("Shape file total time length is not divisible by the time step.")
     shape_data = zeros(total_time ÷ time_step)
     for (_, each_data) in dict["Data"]
         shape_data += each_data
@@ -210,44 +204,61 @@ function _read_agents(
     agents = []
     for (name, agent_info) in agent_dict
         if agent_info["Role"] == "Consumer"
-            push!(agents, Consumer(
-                index = length(agents) + 1,
-                name = name,
-                bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"], market, grid),
-            ))
+            push!(
+                agents,
+                Consumer(
+                    index = length(agents) + 1,
+                    name = name,
+                    bus = network.buses_by_name[agent_info["Bus"]],
+                    trader = _construct_trader(agent_info["Trader"], market, grid),
+                ),
+            )
         elseif agent_info["Role"] == "Producer"
-            push!(agents, Producer(
-                index = length(agents) + 1,
-                name = name,
-                bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"], market, grid),
-                storage = Storage(
-                    capacity = agent_info["Storage capacity"] == -1 ? ceil(
-                        16 * demand_shape.average * agent_info["PV type"]) : agent_info["Storage capacity"],
-                    efficiency = agent_info["Storage efficiency"],
+            push!(
+                agents,
+                Producer(
+                    index = length(agents) + 1,
+                    name = name,
+                    bus = network.buses_by_name[agent_info["Bus"]],
+                    trader = _construct_trader(agent_info["Trader"], market, grid),
+                    storage = Storage(
+                        capacity = agent_info["Storage capacity"] == -1 ?
+                                   ceil(
+                            agent["PV storage covering time (h)"] *
+                            demand_shape.average *
+                            agent_info["PV type"],
+                        ) : agent_info["Storage capacity"],
+                        efficiency = agent_info["Storage efficiency"],
+                    ),
+                    panel = SolarPanel(
+                        max_rate = ceil(demand_shape.average * agent_info["PV type"]),
+                        efficiency = agent_info["PV efficiency"],
+                    ),
                 ),
-                panel = SolarPanel(
-                    max_rate = ceil(demand_shape.average * agent_info["PV type"]),
-                    efficiency = agent_info["PV efficiency"]
-                )
-            ))
+            )
         elseif agent_info["Role"] == "Prosumer"
-            push!(agents, Prosumer(
-                index = length(agents) + 1,
-                name = name,
-                bus = network.buses_by_name[agent_info["Bus"]],
-                trader = _construct_trader(agent_info["Trader"], market, grid),
-                storage = Storage(
-                    capacity = agent_info["Storage capacity"] == -1 ? ceil(
-                        16 * demand_shape.average * agent_info["PV type"]) : agent_info["Storage capacity"],
-                    efficiency = agent_info["Storage efficiency"],
+            push!(
+                agents,
+                Prosumer(
+                    index = length(agents) + 1,
+                    name = name,
+                    bus = network.buses_by_name[agent_info["Bus"]],
+                    trader = _construct_trader(agent_info["Trader"], market, grid),
+                    storage = Storage(
+                        capacity = agent_info["Storage capacity"] == -1 ?
+                                   ceil(
+                            agent["PV storage covering time (h)"] *
+                            demand_shape.average *
+                            agent_info["PV type"],
+                        ) : agent_info["Storage capacity"],
+                        efficiency = agent_info["Storage efficiency"],
+                    ),
+                    panel = SolarPanel(
+                        max_rate = ceil(demand_shape.average * agent_info["PV type"]),
+                        efficiency = agent_info["PV efficiency"],
+                    ),
                 ),
-                panel = SolarPanel(
-                    max_rate = ceil(demand_shape.average * agent_info["PV type"]),
-                    efficiency = agent_info["PV efficiency"]
-                )
-            ))
+            )
         else
             error("The role of agent $name is undefined.")
         end
@@ -258,20 +269,15 @@ end
 ```
 This function reads the network buses and lines
 ```
-function _read_market(
-    market_dict::DefaultOrderedDict,
-    grid::Grid,
-    clock::Clock
-)::Market 
-    market_dict["Type"] !== nothing || error(
-        "Please specify a market type")
+function _read_market(market_dict::DefaultOrderedDict, grid::Grid, clock::Clock)::Market
+    market_dict["Type"] !== nothing || error("Please specify a market type")
     # get arrival
     arrival = nothing
     if market_dict["Arrival type"] === "Exponential"
         arrival = Exponential(market_dict["Interarrival time (min)"])
     end
     # construct the market
-    if market_dict["Type"] === "CDA" 
+    if market_dict["Type"] === "CDA"
         return CDAMarket(
             arrival = arrival,
             price_history = zeros(clock.n_steps_one_day),
@@ -297,7 +303,7 @@ This function reads the network buses and lines
 function _read_network_instance(
     bus_dict::DefaultOrderedDict,
     line_dict::DefaultOrderedDict;
-    instance_name::Union{Nothing, String} = nothing,
+    instance_name::Union{Nothing,String} = nothing,
     tol::Float64 = 1e-10,
 )::NetworkInstance
     lines = TransmissionLine[]
@@ -337,14 +343,14 @@ function _read_network_instance(
             dict["Normal flow limit (kW)"],
             dict["Emergency flow limit (kW)"],
             0.0,
-            dict["Utilization fee (\$/MW)"]
+            dict["Utilization fee (\$/MW)"],
         )
         name_to_line[line_name] = line
         push!(lines, line)
     end
 
     # Construct network instance
-    if instance_name === nothing 
+    if instance_name === nothing
         instance_name = "my_network_instance"
     end
 
@@ -364,6 +370,6 @@ function _read_network_instance(
         G = G,
         isf = isf,
     )
-    
+
     return network
 end

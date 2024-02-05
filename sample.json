@@ -24,6 +24,7 @@
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,
+        "PV storage covering time (h)": 16.0,
         "PV efficiency": 0.25
       },
       "Chris": {
@@ -33,6 +34,7 @@
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,
+        "PV storage covering time (h)": 16.0,
         "PV efficiency": 0.25
       },
       "David": {
@@ -62,6 +64,7 @@
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,
+        "PV storage covering time (h)": 16.0,
         "PV efficiency": 0.25
       },
       "Iris": {
@@ -71,6 +74,7 @@
         "Storage capacity": -1,
         "Storage efficiency": 0.8,
         "PV type": 4.0,
+        "PV storage covering time (h)": 16.0,
         "PV efficiency": 0.25
       }
     },
