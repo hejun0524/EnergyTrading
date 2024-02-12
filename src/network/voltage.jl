@@ -35,9 +35,9 @@ function _compute_vsc(network::NetworkInstance, target_bus::Bus)::Vector{Complex
 
     for i = 1:n
         # update non-slack entries on M
-        M[i, :] = [0 (vstar[i] * network.Y[i, 2:end])']
+        M[i, :] = [0 transpose(vstar[i] * network.Y[i, 2:end])]
         # update entries on N
-        N[i, i] = network.Y[i, :]' * v
+        N[i, i] = transpose(network.Y[i, :]) * v
     end
 
     # solve the linear complex system 

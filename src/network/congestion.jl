@@ -19,7 +19,7 @@ function _compute_ptdf(
     to_bus::Bus,
 )::Vector{Float64}
     n_lines = length(network.lines)
-    isf_i = from_bus.offset === 0 ? zeros(n_lines) : network.isf[:, from_bus.offset]
-    isf_j = to_bus.offset === 0 ? zeros(n_lines) : network.isf[:, to_bus.offset]
+    isf_i = from_bus.offset === 0 ? zeros(n_lines) : network.isf[:, from_bus.index]
+    isf_j = to_bus.offset === 0 ? zeros(n_lines) : network.isf[:, to_bus.index]
     return isf_i - isf_j
 end

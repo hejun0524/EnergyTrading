@@ -19,7 +19,7 @@ end
 
 function _compute_loss(network::NetworkInstance, from_bus::Bus, to_bus::Bus)::Float64
     v = [_polar_to_complex(bus.v_mag, bus.v_ang) for bus in network.buses]
-    VG = conj(v)' * network.G
+    VG = transpose(conj(v)) * network.G
     lsf_i = real(VG * _compute_vsc(network, from_bus))
     lsf_j = real(VG * _compute_vsc(network, to_bus))
     bec = lsf_i - lsf_j
