@@ -224,7 +224,7 @@ function _read_agents(
                     storage = Storage(
                         capacity = agent_info["Storage capacity"] == -1 ?
                                    ceil(
-                            agent["PV storage covering time (h)"] *
+                            agent_info["PV storage covering time (h)"] *
                             demand_shape.average *
                             agent_info["PV type"],
                         ) : agent_info["Storage capacity"],
@@ -238,16 +238,15 @@ function _read_agents(
             )
         elseif agent_info["Role"] == "Prosumer"
             push!(
-                agents,
+                agents, 
                 Prosumer(
                     index = length(agents) + 1,
                     name = name,
                     bus = network.buses_by_name[agent_info["Bus"]],
                     trader = _construct_trader(agent_info["Trader"], market, grid),
                     storage = Storage(
-                        capacity = agent_info["Storage capacity"] == -1 ?
-                                   ceil(
-                            agent["PV storage covering time (h)"] *
+                        capacity = agent_info["Storage capacity"] == -1 ? ceil(
+                            agent_info["PV storage covering time (h)"] *
                             demand_shape.average *
                             agent_info["PV type"],
                         ) : agent_info["Storage capacity"],
@@ -292,6 +291,7 @@ function _read_market(market_dict::DefaultOrderedDict, grid::Grid, clock::Clock)
             supply_history = zeros(clock.n_steps_one_day),
             demand_history = zeros(clock.n_steps_one_day),
             ratio_history = zeros(clock.n_steps_one_day),
+            clearing_method = market_dict["Clearing method"]
         )
     end
     error("$(market_dict["Type"]) is not a supported market type.")

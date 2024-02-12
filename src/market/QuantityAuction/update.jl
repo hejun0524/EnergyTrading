@@ -22,3 +22,16 @@ function _update_ratio!(market::QuantityCDAMarket, clock::Clock)
     end
     market.current_price = _compute_sdr_price(market, clock)
 end
+
+function _update_initial_ratio!(
+    market::QuantityCDAMarket, 
+    agents::Vector{Agent},
+    clock::Clock,
+)
+    market.current_supply = 0.0
+    market.current_demand = sum(a.current_basic_demand for a in agents)
+    market.current_ratio = 0.0
+    market.current_price = _compute_sdr_price(market, clock)
+    # @show market.current_demand
+    # @show market.current_price
+end

@@ -8,6 +8,7 @@ Base.@kwdef mutable struct CDAMarket <: Market
     clearing_history::Vector{Transaction} = Transaction[]
     price_history::Vector{Float64}
     quantity_history::Vector{Float64}
+    clearing_method::String = "Conventional"
 end
 
 Base.@kwdef mutable struct QuantityCDAMarket <: Market
@@ -18,6 +19,7 @@ Base.@kwdef mutable struct QuantityCDAMarket <: Market
     book_sell::Vector{Order} = Order[]
     most_recent_order::Union{Order,Nothing} = nothing
     clearing_history::Vector{Transaction} = Transaction[]
+    clearing_method::String # Conventional or Proportional
     current_supply::Float64 = 0.0
     current_demand::Float64 = 0.0
     current_ratio::Float64 = 0.0
